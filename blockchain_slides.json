@@ -1,0 +1,447 @@
+{
+  "title": "Blockchain & Solidity — University Course",
+  "author": "Blockchain Lectures",
+  "theme": {
+    "primary": "0D1B2A",
+    "accent": "00C2FF",
+    "light": "E8F4FD",
+    "white": "FFFFFF",
+    "muted": "8899AA",
+    "cardBg": "F0F8FF",
+    "darkCard": "142236"
+  },
+  "slides": [
+
+    {
+      "id": 1,
+      "type": "title",
+      "title": "Blockchain & Solidity",
+      "subtitle": "A Complete University Course",
+      "tagline": "From Distributed Ledger Fundamentals to Smart Contract Development on the EVM",
+      "footer": "2nd Semester Bachelor — Blockchain Engineering | Course Version 2025"
+    },
+
+    {
+      "id": 2,
+      "type": "agenda",
+      "title": "Course Outline",
+      "items": [
+        { "num": "01", "label": "What is Blockchain?" },
+        { "num": "02", "label": "Blocks, Chains & Merkle Trees" },
+        { "num": "03", "label": "Decentralization & Node Types" },
+        { "num": "04", "label": "Cryptography & Hashing" },
+        { "num": "05", "label": "Consensus Mechanisms" },
+        { "num": "06", "label": "Wallets, Keys & Transactions" },
+        { "num": "07", "label": "Ethereum & the EVM" },
+        { "num": "08", "label": "Smart Contracts & Use Cases" },
+        { "num": "09", "label": "Solidity — Language Basics" },
+        { "num": "10", "label": "Solidity — Data Types & Variables" },
+        { "num": "11", "label": "Solidity — Functions & Modifiers" },
+        { "num": "12", "label": "Solidity — Events & Error Handling" },
+        { "num": "13", "label": "Solidity — Mappings & Arrays" },
+        { "num": "14", "label": "Solidity — Inheritance & Interfaces" },
+        { "num": "15", "label": "DeFi, NFTs & Real-World Projects" },
+        { "num": "16", "label": "Summary & Next Steps" }
+      ]
+    },
+
+    {
+      "id": 3,
+      "type": "definition",
+      "title": "What is Blockchain?",
+      "definition": "A blockchain is a distributed, decentralized digital ledger that permanently records transactions across a peer-to-peer network of computers. It is append-only, cryptographically secured, and requires consensus among participants before any new data is added.",
+      "keyPoints": [
+        "Introduced by Satoshi Nakamoto in the 2008 Bitcoin whitepaper — 'A Peer-to-Peer Electronic Cash System'",
+        "Data is organized into 'blocks' — each block is cryptographically linked to the one before it, forming a 'chain'",
+        "No central authority owns or controls the ledger — all participants (nodes) hold an identical copy",
+        "Immutability: once a block is confirmed and buried under subsequent blocks, altering it requires re-doing the computational work for every block that follows — practically impossible on large networks",
+        "Trust is provided by mathematics and cryptography, not by banks, governments, or intermediaries",
+        "Three pillars: Decentralization (no single owner), Transparency (publicly auditable), Security (cryptographic proofs)"
+      ]
+    },
+
+    {
+      "id": 4,
+      "type": "two_column",
+      "title": "Blocks & Chains — Deep Structure",
+      "leftTitle": "Anatomy of a Block",
+      "leftItems": [
+        "Version — protocol rules this block follows",
+        "Timestamp — Unix time when block was created",
+        "Previous Block Hash — SHA-256 of the prior block header (creates the chain link)",
+        "Merkle Root — root hash of all transactions in this block",
+        "Nonce — 32-bit number miners iterate to find valid hash",
+        "Difficulty Target — required number of leading zeros in hash",
+        "Transaction Counter — number of transactions included",
+        "Transaction List — full list of validated transactions"
+      ],
+      "rightTitle": "How the Chain Forms",
+      "rightItems": [
+        "Block 0 = Genesis Block (hardcoded, no predecessor hash)",
+        "Each new block stores the hash of its parent — breaking one link breaks every link after it",
+        "Changing a single transaction in Block 5 changes its hash, which invalidates Block 6's stored hash, cascading through every block to the present",
+        "Longest valid chain rule — nodes always accept the chain with most accumulated proof-of-work",
+        "Orphan blocks — two valid blocks found simultaneously; one is eventually discarded as the chain grows",
+        "Block time: Bitcoin ~10 min | Ethereum ~12 sec | Solana ~400 ms"
+      ]
+    },
+
+    {
+      "id": 5,
+      "type": "definition",
+      "title": "Merkle Trees — How Transactions Are Fingerprinted",
+      "definition": "A Merkle Tree is a binary tree of hashes where each leaf node is a hash of a transaction, and each parent node is the hash of its two children. The Merkle Root (stored in the block header) is a single 32-byte fingerprint of ALL transactions in the block.",
+      "keyPoints": [
+        "Efficient verification: to prove a single transaction exists in a block, you only need O(log n) hashes — not all thousands of transactions",
+        "Tamper detection: changing any one transaction changes its leaf hash, which bubbles up and changes the Merkle Root — instantly detectable",
+        "SPV (Simplified Payment Verification): light-weight mobile wallets use Merkle proofs to verify transactions without downloading the full blockchain",
+        "Bitcoin uses double SHA-256 for Merkle nodes: Hash = SHA256(SHA256(data))",
+        "Ethereum uses a modified Patricia Merkle Trie — three tries per block: Transactions Trie, Receipts Trie, State Trie",
+        "Real-world analogy: think of the Merkle Root as a checksum for the entire contents of a block"
+      ]
+    },
+
+    {
+      "id": 6,
+      "type": "stats",
+      "title": "Decentralization & Node Types",
+      "intro": "The blockchain network is maintained by thousands of independently operated nodes worldwide. No single entity can shut it down — there is no central server, no CEO, no off switch.",
+      "stats": [
+        { "value": "17,000+", "label": "Bitcoin Full Nodes (2025)" },
+        { "value": "6,000+", "label": "Ethereum Nodes Globally" },
+        { "value": "0", "label": "Central Points of Failure" }
+      ],
+      "bullets": [
+        "Full Nodes — download and independently verify every block and every transaction ever made; enforce all consensus rules; most important for network integrity",
+        "Pruned Full Nodes — verify the full chain but discard old transaction data after verification to save disk space",
+        "Light Nodes (SPV) — download only block headers (~80 bytes each); rely on full nodes for transaction data; used in mobile wallets",
+        "Mining / Validator Nodes — compete (PoW) or are selected (PoS) to produce new blocks; earn block rewards and transaction fees",
+        "Archive Nodes — store the complete historical state of the blockchain including all intermediate states; needed for blockchain explorers and analytics",
+        "Bootstrap Nodes — help new nodes discover peers when first joining the network (DNS seeds in Bitcoin)"
+      ]
+    },
+
+    {
+      "id": 7,
+      "type": "concept",
+      "title": "Cryptographic Hashing",
+      "subtitle": "The Mathematical Backbone of Blockchain Security",
+      "description": "A cryptographic hash function takes any input of any size and produces a fixed-length output (digest). The same input always gives the same output, but the output reveals nothing about the input. Bitcoin uses SHA-256 (256-bit output). Ethereum uses Keccak-256.",
+      "properties": [
+        { "term": "Deterministic", "desc": "SHA-256('Hello') always returns the exact same 64-character hex string, on any computer, anywhere in the world" },
+        { "term": "Pre-image Resistant (One-Way)", "desc": "Given a hash output, it is computationally infeasible to find the original input. This is why passwords and private keys are safe as hashes" },
+        { "term": "Avalanche Effect", "desc": "Changing even 1 bit of input flips approximately 50% of output bits. 'Hello' vs 'hello' produce completely different hashes" },
+        { "term": "Collision Resistant", "desc": "Finding two different inputs that produce the same hash output is computationally infeasible — probability is 1 in 2^256 for SHA-256" }
+      ],
+      "example": "SHA-256('Blockchain') = ef7797e13d3a75526946a3bcf00daec9fc9d1a6aa4083d7ebb11a9b33b6e6a41 | Ethereum uses Keccak-256 for address derivation and transaction signing"
+    },
+
+    {
+      "id": 8,
+      "type": "two_column",
+      "title": "Public Key Cryptography & Digital Signatures",
+      "leftTitle": "How Keys Work",
+      "leftItems": [
+        "Every account has a key pair: Private Key (secret) + Public Key (shareable)",
+        "Private Key: 256-bit random number — never share this, it controls your funds",
+        "Public Key: derived from private key using Elliptic Curve Multiplication (secp256k1 curve)",
+        "Ethereum Address: last 20 bytes of Keccak-256 hash of the public key",
+        "Key relationship is one-way: public key cannot be used to derive private key",
+        "HD Wallets (BIP-32): one seed phrase (12/24 words) generates a tree of key pairs"
+      ],
+      "rightTitle": "How Transactions Are Signed",
+      "rightItems": [
+        "Step 1: User creates a transaction (to, value, data, nonce, gas)",
+        "Step 2: Transaction is hashed using Keccak-256",
+        "Step 3: Private key signs the hash using ECDSA algorithm — produces (r, s, v) signature",
+        "Step 4: Anyone can use the signature + transaction data to recover the signer's public key",
+        "Step 5: Network verifies signature without ever seeing the private key",
+        "Nonce: a counter preventing replay attacks — each transaction from an address increments by 1"
+      ]
+    },
+
+    {
+      "id": 9,
+      "type": "two_column",
+      "title": "Consensus Mechanisms",
+      "leftTitle": "Proof of Work (PoW)",
+      "leftItems": [
+        "Miners race to find a nonce such that SHA-256(block header) < difficulty target",
+        "Difficulty auto-adjusts every 2016 blocks (~2 weeks) in Bitcoin to maintain 10-min block time",
+        "Finding the nonce requires trillions of hash attempts — pure brute force",
+        "Verifying a valid block takes one hash computation — asymmetric by design",
+        "51% attack: to rewrite history, attacker needs more than half the network's hash power",
+        "Energy: Bitcoin PoW consumes ~120 TWh/year — comparable to a mid-sized country",
+        "Used by: Bitcoin, Litecoin, Monero, Dogecoin"
+      ],
+      "rightTitle": "Proof of Stake (PoS)",
+      "rightItems": [
+        "Validators lock up (stake) cryptocurrency as collateral to participate in block production",
+        "Block proposer is selected pseudo-randomly, weighted by stake size",
+        "Slashing: dishonest validators lose a portion of their staked funds as penalty",
+        "Ethereum requires 32 ETH (~$100K+) to run a validator node",
+        "Finality: Ethereum's Casper achieves economic finality — reverting a finalized block would cost attacker 1/3 of total staked ETH",
+        "Energy: Ethereum's switch to PoS (The Merge, Sep 2022) cut energy use by ~99.95%",
+        "Other PoS variants: DPoS (EOS), NPoS (Polkadot), LPoS (Tezos)"
+      ]
+    },
+
+    {
+      "id": 10,
+      "type": "properties",
+      "title": "Core Properties of Blockchain",
+      "properties": [
+        { "icon": "🔒", "title": "Immutability", "desc": "Confirmed blocks are cryptographically sealed. Altering past data requires redoing all subsequent proof-of-work — economically infeasible on established networks" },
+        { "icon": "👁", "title": "Transparency", "desc": "Every transaction is permanently public and auditable by anyone with a blockchain explorer. There is no hidden activity on a public chain" },
+        { "icon": "🌐", "title": "Decentralization", "desc": "Thousands of independent nodes worldwide maintain identical copies. No single company, government, or person controls the network" },
+        { "icon": "🔗", "title": "Trustlessness", "desc": "Parties interact via cryptographic proofs and protocol rules, not promises or legal agreements. Code enforces the contract" },
+        { "icon": "📜", "title": "Programmability", "desc": "Smart contracts are programs stored on-chain that execute automatically when triggered. They enable DeFi, NFTs, DAOs, and more" },
+        { "icon": "⚡", "title": "Censorship Resistance", "desc": "No authority can block a valid transaction. Anyone with the correct private key can broadcast to the network and expect inclusion" }
+      ]
+    },
+
+    {
+      "id": 11,
+      "type": "definition",
+      "title": "Ethereum & the EVM",
+      "definition": "Ethereum is a programmable blockchain — a 'world computer' where anyone can deploy and run decentralized applications (dApps). The Ethereum Virtual Machine (EVM) is the sandboxed runtime environment that executes smart contract bytecode on every node in the network.",
+      "keyPoints": [
+        "Proposed by Vitalik Buterin in 2013; launched in July 2015 — extended Bitcoin's idea with a Turing-complete scripting language",
+        "EVM: a stack-based virtual machine with 256-bit word size; executes bytecode compiled from Solidity, Vyper, or other EVM-compatible languages",
+        "Gas: every EVM operation (opcode) costs a fixed amount of gas; users pay gas fees in ETH to compensate validators for computation",
+        "Gas Limit: the maximum gas a transaction is willing to use; prevents infinite loops from halting the network (the Halting Problem solution)",
+        "EIP-1559 (London Upgrade, 2021): introduced base fee (burned) + priority tip (to validator); made gas fees more predictable",
+        "EVM Compatibility: Polygon, BNB Chain, Avalanche C-Chain, Arbitrum, Optimism all run the EVM — Solidity contracts deploy across all these chains with minimal changes",
+        "State: Ethereum is a state machine — every block transitions the global state (all account balances + contract storage) from one valid state to another"
+      ]
+    },
+
+    {
+      "id": 12,
+      "type": "two_column",
+      "title": "Smart Contracts — What & Why",
+      "leftTitle": "What is a Smart Contract?",
+      "leftItems": [
+        "A program deployed to the blockchain at a fixed address — immutable once deployed",
+        "Written in Solidity (or Vyper), compiled to EVM bytecode, stored on-chain",
+        "Executes automatically when called — no human or server needed to run it",
+        "Has its own ETH balance and persistent storage (key-value store)",
+        "Anyone can read its code (open source by default on Etherscan)",
+        "Interactions are transactions — each call is recorded on-chain permanently",
+        "Cannot be stopped, modified, or censored once deployed (unless coded with an upgrade mechanism)"
+      ],
+      "rightTitle": "Smart Contract Use Cases",
+      "rightItems": [
+        "DeFi — Uniswap (DEX), Aave (lending), MakerDAO (stablecoin DAI) — billions in TVL",
+        "NFTs — ERC-721 contracts store ownership of digital assets; OpenSea, Blur",
+        "DAOs — Decentralized Autonomous Organizations vote via token governance (Compound, Uniswap DAO)",
+        "Stablecoins — USDC, USDT, DAI are ERC-20 contracts that manage token supply",
+        "Bridges — cross-chain token transfers via lock-and-mint smart contract pairs",
+        "Gaming — in-game assets as NFTs; play-to-earn mechanics (Axie Infinity, Gods Unchained)",
+        "Identity — on-chain credentials, verifiable attestations (ENS — Ethereum Name Service)"
+      ]
+    },
+
+    {
+      "id": 13,
+      "type": "definition",
+      "title": "Solidity — Introduction to the Language",
+      "definition": "Solidity is a statically-typed, compiled, object-oriented programming language designed specifically for writing smart contracts on the EVM. Its syntax is heavily influenced by JavaScript, C++, and Python. Solidity files use the .sol extension.",
+      "keyPoints": [
+        "Current stable version: Solidity 0.8.x — introduced built-in overflow/underflow protection (pre-0.8 required SafeMath library)",
+        "SPDX License Identifier: every file should start with // SPDX-License-Identifier: MIT (or GPL-3.0, UNLICENSED, etc.)",
+        "pragma solidity ^0.8.0; — declares the compiler version; ^ means 'compatible with 0.8.x but not 0.9.x'",
+        "Compiled by solc (Solidity Compiler) into: ABI (Application Binary Interface) + Bytecode. ABI defines how to call the contract. Bytecode is what gets deployed",
+        "Development tools: Remix IDE (browser-based, perfect for beginners), Hardhat (Node.js framework), Foundry (Rust-based, fast testing)",
+        "Every deployed contract has a unique address — interactions happen by sending transactions to that address with encoded function call data"
+      ]
+    },
+
+    {
+      "id": 14,
+      "type": "two_column",
+      "title": "Solidity — Data Types & State Variables",
+      "leftTitle": "Value Types",
+      "leftItems": [
+        "bool — true / false (1 byte storage)",
+        "uint256 — unsigned integer 0 to 2^256-1 (most common); also uint8, uint16...uint128",
+        "int256 — signed integer -2^255 to 2^255-1; also int8...int128",
+        "address — 20-byte Ethereum address; address payable can receive ETH",
+        "bytes32 — fixed-size 32-byte array; cheapest way to store short strings on-chain",
+        "bytes1 to bytes32 — fixed-size byte arrays",
+        "enum — user-defined type with named constants; stored as uint8"
+      ],
+      "rightTitle": "Reference Types & Storage",
+      "rightItems": [
+        "string — dynamic UTF-8 string; expensive to store on-chain",
+        "bytes — dynamic byte array; more gas-efficient than string for raw data",
+        "array[] — dynamic or fixed-size arrays of any type",
+        "mapping(key => value) — hash table; keys are hashed, values stored at that slot",
+        "struct — groups multiple variables under one named type",
+        "Storage: persists between calls — most expensive (SSTORE opcode = 20,000 gas for new slot)",
+        "Memory: temporary within a function call — cheap; erased after execution",
+        "Calldata: read-only, non-modifiable — used for external function arguments; cheapest"
+      ]
+    },
+
+    {
+      "id": 15,
+      "type": "two_column",
+      "title": "Solidity — Functions & Visibility",
+      "leftTitle": "Function Visibility",
+      "leftItems": [
+        "public — callable from anywhere: inside contract, derived contracts, and externally",
+        "private — only callable within the same contract; not inherited",
+        "internal — callable within the contract AND derived (child) contracts; not externally",
+        "external — only callable from outside the contract; more gas-efficient for large arguments (uses calldata)",
+        "Getter functions for public state variables are auto-generated by the compiler",
+        "Constructor — special function that runs ONCE at deployment; sets initial state"
+      ],
+      "rightTitle": "Function Modifiers & Keywords",
+      "rightItems": [
+        "view — reads state but does NOT modify it; free to call (no gas if called externally)",
+        "pure — neither reads nor modifies state; mathematical/utility functions",
+        "payable — allows function to receive ETH; required to accept Ether transfers",
+        "returns(type) — declares return type; use named returns for clarity",
+        "modifier — reusable code that runs before/after a function (e.g., onlyOwner, nonReentrant)",
+        "virtual — marks function as overridable in derived contracts",
+        "override — indicates function overrides a parent virtual function"
+      ]
+    },
+
+    {
+      "id": 16,
+      "type": "two_column",
+      "title": "Solidity — Mappings, Arrays & Structs",
+      "leftTitle": "Mappings",
+      "leftItems": [
+        "mapping(address => uint256) public balances — maps each address to a token balance",
+        "Values default to zero for unmapped keys — no KeyError like Python",
+        "Cannot iterate over a mapping — you must track keys manually with an array",
+        "Nested mappings: mapping(address => mapping(address => uint256)) allowances — used in ERC-20 token approvals",
+        "Mappings can only exist in storage — cannot be used in memory or as function parameters",
+        "Gas cost: reading a mapping slot = 2,100 gas (cold) or 100 gas (warm, EIP-2929)"
+      ],
+      "rightTitle": "Arrays & Structs",
+      "rightItems": [
+        "uint256[] public numbers — dynamic array; .push(), .pop(), .length",
+        "uint256[10] public fixed — fixed array; size cannot change after declaration",
+        "Deleting from middle of array leaves a gap (gas-efficient trick: swap with last, then pop)",
+        "struct Student { string name; uint256 grade; bool enrolled; } — groups related data",
+        "Structs can be stored in mappings: mapping(uint256 => Student) public students",
+        "Packing: declaring uint128 a; uint128 b; in a struct packs them into one 32-byte storage slot — saves gas vs two uint256"
+      ]
+    },
+
+    {
+      "id": 17,
+      "type": "two_column",
+      "title": "Solidity — Events & Error Handling",
+      "leftTitle": "Events",
+      "leftItems": [
+        "Events emit logs stored on the blockchain — cheaper than storage (375 gas base)",
+        "event Transfer(address indexed from, address indexed to, uint256 value)",
+        "emit Transfer(msg.sender, recipient, amount) — triggers the event",
+        "Indexed parameters (up to 3) are stored in bloom filters — efficiently searchable by dApps",
+        "Frontend apps (ethers.js / web3.js) listen for events to update UI in real-time",
+        "Events are NOT accessible from within Solidity — they are only for off-chain consumption",
+        "Standard: ERC-20 requires Transfer and Approval events for all token movements"
+      ],
+      "rightTitle": "Error Handling",
+      "rightItems": [
+        "require(condition, 'error message') — reverts with message if condition false; use for input validation and access control",
+        "revert('reason') — unconditionally reverts; use inside if-else for complex conditions",
+        "assert(condition) — reverts with Panic error if false; use only for internal invariants that should never fail",
+        "custom error MyError(address caller) — Solidity 0.8.4+; more gas-efficient than string messages",
+        "revert MyError(msg.sender) — uses custom error; saves ~50% gas vs require with string",
+        "try/catch — handles errors from external contract calls and contract creation",
+        "All reverts are atomic — all state changes in the call are undone; gas used is NOT refunded"
+      ]
+    },
+
+    {
+      "id": 18,
+      "type": "two_column",
+      "title": "Solidity — Inheritance & Interfaces",
+      "leftTitle": "Inheritance",
+      "leftItems": [
+        "contract MyToken is ERC20 — inherits all state and functions of ERC20",
+        "Multiple inheritance: contract C is A, B — resolved using C3 linearization (same as Python MRO)",
+        "super.functionName() — explicitly calls the parent implementation",
+        "abstract contract — has at least one unimplemented function; cannot be deployed directly",
+        "OpenZeppelin Contracts library provides battle-tested base contracts: ERC20, ERC721, Ownable, AccessControl, ReentrancyGuard",
+        "Import: import '@openzeppelin/contracts/token/ERC20/ERC20.sol' — npm or Hardhat dependency"
+      ],
+      "rightTitle": "Interfaces & Libraries",
+      "rightItems": [
+        "interface IERC20 — declares function signatures only; no implementation, no state variables",
+        "Used to interact with external contracts whose source code you may not have",
+        "IERC20(tokenAddress).transfer(to, amount) — calls transfer on any ERC-20 token",
+        "library SafeMath — stateless, reusable code; called with delegatecall; no storage of its own",
+        "using SafeMath for uint256 — attaches library functions to a type (pre-0.8 pattern)",
+        "Post-Solidity 0.8: built-in overflow protection makes SafeMath obsolete",
+        "Interfaces + events define the ABI — the standard that dApps use to communicate with contracts"
+      ]
+    },
+
+    {
+      "id": 19,
+      "type": "stats",
+      "title": "DeFi, NFTs & The Ethereum Ecosystem",
+      "intro": "The programmability of Ethereum has spawned a multi-trillion dollar ecosystem of decentralized applications. As developers, understanding these protocols is essential — you may be building the next one.",
+      "stats": [
+        { "value": "$100B+", "label": "Total DeFi Value Locked (TVL)" },
+        { "value": "1M+", "label": "Smart Contracts on Ethereum" },
+        { "value": "50,000+", "label": "Active dApp Users Daily" }
+      ],
+      "bullets": [
+        "ERC-20 (Fungible Tokens) — the standard for cryptocurrencies and governance tokens; defines transfer, approve, allowance, balanceOf, totalSupply functions",
+        "ERC-721 (NFTs) — Non-Fungible Tokens; each token has a unique tokenId; used for digital art, game items, real estate deeds — OpenSea, Blur",
+        "ERC-1155 (Multi-Token) — single contract manages both fungible and non-fungible tokens; used in blockchain gaming for efficiency",
+        "DeFi Primitives — DEXes (Uniswap AMM model), Lending (Aave overcollateralized loans), Yield Farming, Liquid Staking (Lido stETH)",
+        "Layer 2 Scaling — Arbitrum & Optimism (Optimistic Rollups), zkSync & StarkNet (ZK Rollups) — execute transactions off-chain, post proofs to Ethereum L1; 10-100x cheaper gas",
+        "DAOs — Compound, Uniswap, ENS governed entirely by token holders via on-chain proposals and voting; no CEO or board of directors"
+      ]
+    },
+
+    {
+      "id": 20,
+      "type": "two_column",
+      "title": "Development Tools & Workflow",
+      "leftTitle": "Development Stack",
+      "leftItems": [
+        "Remix IDE — browser-based; no installation; perfect for learning and quick prototyping; built-in compiler, deployer, and debugger",
+        "Hardhat — Node.js development framework; scripting in JavaScript/TypeScript; local Ethereum network (hardhat node); industry standard",
+        "Foundry — Rust-based toolchain (forge, cast, anvil); tests written in Solidity; extremely fast; growing rapidly in professional teams",
+        "OpenZeppelin Contracts — audited, production-ready base contracts; install via npm; essential for secure token and access control development",
+        "ethers.js / viem — JavaScript libraries for frontend interaction with deployed contracts; read state, send transactions, listen to events"
+      ],
+      "rightTitle": "Testing & Deployment",
+      "rightItems": [
+        "Unit Tests — test each function in isolation; Hardhat uses Mocha + Chai; Foundry uses Solidity assertions",
+        "Local Network — hardhat node or anvil; fork mainnet for integration testing with real protocols",
+        "Testnets — Sepolia (Ethereum), Mumbai (Polygon); get free test ETH from faucets; deploy and test before mainnet",
+        "Mainnet Deployment — use Hardhat Ignition or Foundry scripts; verify source code on Etherscan (--verify flag)",
+        "Gas Optimization — use mappings over arrays for lookups; pack structs; use calldata not memory; emit events instead of storage where possible",
+        "Security Audits — always audit before mainnet for high-value contracts; common tools: Slither (static analysis), Echidna (fuzzing)"
+      ]
+    },
+
+    {
+      "id": 21,
+      "type": "summary",
+      "title": "Summary & Your Learning Path",
+      "points": [
+        "Blockchain = distributed, cryptographically-linked, tamper-proof ledger maintained by consensus across a decentralized peer-to-peer network",
+        "Cryptographic hashing (SHA-256 / Keccak-256) and digital signatures (ECDSA) underpin all blockchain security — no trusted third party needed",
+        "Consensus mechanisms (PoW, PoS) solve the Byzantine Generals Problem — achieving agreement among untrusted, distributed participants",
+        "Ethereum extends blockchain with the EVM — a programmable world computer where smart contracts execute automatically and trustlessly",
+        "Solidity is your primary tool: master data types, functions, mappings, events, inheritance, and security patterns to build on the EVM",
+        "The ecosystem is vast: ERC-20, ERC-721, DeFi, DAOs, Layer 2 — all built from the smart contract primitives you are learning in this course",
+        "Next steps: Build a complete ERC-20 token, deploy to Sepolia testnet, write unit tests in Hardhat, and explore one DeFi protocol's source code"
+      ],
+      "closing": "The code you write in Solidity becomes unstoppable, globally-accessible financial infrastructure. Build responsibly."
+    }
+
+  ]
+}
