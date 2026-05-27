@@ -1,0 +1,426 @@
+{
+  "title": "Solidity — Data Types, Variables & Functions",
+  "author": "Blockchain Lectures",
+  "theme": {
+    "primary": "0D1B2A",
+    "accent": "00C2FF",
+    "light": "E8F4FD",
+    "white": "FFFFFF",
+    "muted": "8899AA",
+    "cardBg": "F0F8FF",
+    "darkCard": "142236"
+  },
+  "slides": [
+
+    {
+      "id": 1,
+      "type": "title",
+      "title": "Solidity Programming",
+      "subtitle": "Lecture #2 — Data Types, Variables & Functions",
+      "tagline": "The foundational lecture — master this and ERC-20, NFTs, DeFi all become easy",
+      "footer": "2nd Semester Bachelor — Blockchain & Solidity Development | 2025"
+    },
+
+    {
+      "id": 2,
+      "type": "agenda",
+      "title": "Lecture #2 — Outline",
+      "items": [
+        { "num": "01", "label": "Revision of Lecture 1" },
+        { "num": "02", "label": "Solidity Syntax Basics " },
+        { "num": "03", "label": "Data Types — uint, bool, string, address " },
+        { "num": "04", "label": "State Variables vs Local Variables " },
+        { "num": "05", "label": "Storage, Memory & Calldata " },
+        { "num": "06", "label": "Functions & Visibility " },
+        { "num": "07", "label": "View vs Pure & Constructor " },
+        { "num": "08", "label": "Practical: Student Registry Contract " },
+        { "num": "09", "label": "Common Mistakes & Homework " },
+        { "num": "10", "label": "Q&A Session " }
+      ]
+    },
+
+    {
+      "id": 3,
+      "type": "definition",
+      "title": "Revision — What We Learned in Lecture 1",
+      "definition": "Before diving deeper into Solidity programming, let us quickly revise the key foundations from Lecture 1 that this entire lecture builds upon.",
+      "keyPoints": [
+        "Blockchain — distributed, decentralized, tamper-proof ledger shared across thousands of nodes worldwide",
+        "Ethereum — a programmable blockchain; a 'world computer' that runs smart contracts using the EVM (Ethereum Virtual Machine)",
+        "Smart Contracts — programs deployed to the blockchain at a fixed address; immutable, automatic, trustless — no human intermediary needed",
+        "MetaMask — browser wallet for managing your Ethereum account (private key, public address, ETH balance) and signing transactions",
+        "Remix IDE — browser-based development environment; write, compile, deploy, and test Solidity contracts with zero installation",
+        "First Solidity Contract — we wrote a simple storage contract; learned pragma solidity, contract keyword, and state variables"
+      ]
+    },
+
+    {
+      "id": 4,
+      "type": "definition",
+      "title": "Solidity Syntax Basics",
+      "definition": "Solidity syntax is heavily influenced by JavaScript and C++. Every .sol file must begin with two mandatory declarations: an SPDX license identifier and a pragma version directive. Without these, the compiler will issue warnings or errors.",
+      "keyPoints": [
+        "// SPDX-License-Identifier: MIT — declares the open-source license for your code; MIT is the most permissive; required on every file to suppress compiler warnings",
+        "pragma solidity ^0.8.20; — tells the compiler which version to use; ^ means 'this version or any compatible patch version but NOT the next major version (0.9.x)'",
+        "Solidity 0.8.x is recommended for all new contracts — built-in overflow and underflow protection replaces the old SafeMath library pattern",
+        "contract Variables { } — the contract keyword is like a class in OOP; it wraps all your state and logic",
+        "Solidity is statically typed — every variable must declare its type explicitly before use (unlike JavaScript which is dynamic)",
+        "Semicolons ; are mandatory at end of every statement — forgetting one is a very common beginner compile error"
+      ]
+    },
+
+    {
+      "id": 5,
+      "type": "two_column",
+      "title": "Data Types Overview — The Building Blocks",
+      "leftTitle": "Value Types (Stored by Value)",
+      "leftItems": [
+        "uint — unsigned integer; cannot be negative; most common type in Solidity; default is uint256",
+        "int — signed integer; can hold negative values; default is int256",
+        "bool — boolean; only true or false; 1 byte of storage",
+        "address — 20-byte Ethereum address; holds wallet or contract addresses; one of the most unique types in Solidity",
+        "bytes32 — fixed-size 32-byte array; efficient for short data like IDs, hashes, roles",
+        "bytes1 to bytes32 — fixed-size byte arrays for raw binary data",
+        "enum — user-defined named constants; stored as uint8 internally (e.g. Status.Active = 0)"
+      ],
+      "rightTitle": "Reference Types (Stored by Reference)",
+      "rightItems": [
+        "string — dynamic UTF-8 encoded text; stored as a dynamic bytes array; expensive on-chain",
+        "bytes — dynamic raw byte array; more gas-efficient than string for non-text binary data",
+        "uint256[] — dynamic array; can grow and shrink; supports .push() and .pop()",
+        "uint256[5] — fixed-size array; size is hardcoded at compile time; cannot change",
+        "mapping(key => value) — hash table; the most widely used data structure in Solidity",
+        "struct — groups related variables into a single named type (like a record or object)",
+        "Reference types MUST declare their data location: storage, memory, or calldata"
+      ]
+    },
+
+    {
+      "id": 6,
+      "type": "definition",
+      "title": "uint — Unsigned Integer (Most Used Type)",
+      "definition": "uint (unsigned integer) can only store zero and positive whole numbers. It cannot store decimals or negative numbers. In Solidity, uint is an alias for uint256 — a 256-bit number ranging from 0 to 2^256 - 1 (a number with 77 digits).",
+      "keyPoints": [
+        "uint256 range: 0 to 115,792,089,237,316,195,423,570,985,008,687,907,853,269,984,665,640,564,039,457,584,007,913,129,639,935",
+        "Other sizes: uint8 (0-255), uint16 (0-65535), uint32, uint64, uint128 — use smaller sizes to pack structs and save gas",
+        "Example: uint public age = 25; — valid. uint public temp = -5; — COMPILE ERROR (negative not allowed)",
+        "uint is used for: token balances, prices, timestamps (block.timestamp is uint256), counters, IDs, percentages",
+        "Solidity 0.8.x: if uint overflows (goes above max) the transaction automatically REVERTS — no silent wrapping bug",
+        "Arithmetic: +, -, *, /, % (modulus), ** (exponentiation) — all supported natively",
+        "Gas tip: uint256 is actually the cheapest to use on the EVM — the EVM word size is 256 bits, so smaller uints cost extra conversion ops"
+      ]
+    },
+
+    {
+      "id": 7,
+      "type": "two_column",
+      "title": "bool, string & address Types",
+      "leftTitle": "bool — Boolean",
+      "leftItems": [
+        "Stores only: true or false",
+        "Default value if uninitialized: false",
+        "Example: bool public isActive = true;",
+        "Real use cases: user verified status, NFT minted flag, transaction completed marker, contract paused state",
+        "Logical operators: && (AND), || (OR), ! (NOT)",
+        "Comparison: == (equals), != (not equals)",
+        "Common pattern: require(isActive, 'Contract is paused') — gate functions with bool flags"
+      ],
+      "rightTitle": "string & address",
+      "rightItems": [
+        "string public name = \"Ali\"; — stores UTF-8 text; dynamic size; expensive in storage",
+        "Cannot compare strings directly with ==; use keccak256(abi.encodePacked(s1)) == keccak256(abi.encodePacked(s2))",
+        "address public owner; — stores a 20-byte Ethereum address starting with 0x",
+        "address payable — a special address that can receive ETH (has .transfer() and .send() methods)",
+        "address(0) — the zero address 0x0000...0000; used as 'null' equivalent; tokens sent here are burned",
+        "msg.sender — a global variable of type address; always equals the caller of the function",
+        "address.balance — returns ETH balance of any address in wei (uint256)"
+      ]
+    },
+
+    {
+      "id": 8,
+      "type": "two_column",
+      "title": "State Variables vs Local Variables",
+      "leftTitle": "State Variables",
+      "leftItems": [
+        "Declared INSIDE the contract but OUTSIDE any function",
+        "Stored permanently on the blockchain in contract storage (key-value store)",
+        "Persist between function calls — their value is remembered forever",
+        "Reading costs 2,100 gas (cold) or 100 gas (warm); writing costs 20,000 gas (new) or 5,000 gas (update)",
+        "Example: uint public age = 25; — exists in storage slot 0 of the contract",
+        "public keyword auto-generates a free getter function — age() can be called externally with no gas",
+        "Uninitialized state variables get default values: uint = 0, bool = false, address = 0x000...000"
+      ],
+      "rightTitle": "Local Variables",
+      "rightItems": [
+        "Declared INSIDE a function body — only exist during that function's execution",
+        "Stored in memory (or on the EVM stack for value types) — FREE, no gas cost for storage",
+        "Destroyed completely when the function finishes — not persisted anywhere",
+        "Example: uint number = 10; inside a function — exists only during that call",
+        "Value types (uint, bool, address) go on the EVM stack automatically",
+        "Reference types (string, arrays, structs) inside functions must use memory keyword",
+        "Rule of thumb: if the variable needs to survive after the function ends, make it a state variable"
+      ]
+    },
+
+    {
+      "id": 9,
+      "type": "definition",
+      "title": "Default Values — Solidity Initializes Everything",
+      "definition": "In Solidity, you never have null or undefined. Every uninitialized variable automatically receives a default (zero) value based on its type. This is a key safety feature that prevents many bugs common in other languages.",
+      "keyPoints": [
+        "uint / int → 0 (zero)",
+        "bool → false",
+        "address → 0x0000000000000000000000000000000000000000 (the zero address)",
+        "string → \"\" (empty string)",
+        "bytes32 → 0x0000000000000000000000000000000000000000000000000000000000000000",
+        "Dynamic arrays → [] (empty array with length 0)",
+        "Practical importance: mapping(address => uint) balances — if you query an address that never deposited, it returns 0 automatically, not an error"
+      ]
+    },
+
+    {
+      "id": 10,
+      "type": "concept",
+      "title": "Storage, Memory & Calldata",
+      "subtitle": "The Most Important Gas Optimization Concept in Solidity",
+      "description": "Solidity requires you to explicitly declare WHERE data lives. This is unlike most languages. Each location has different cost, lifetime, and mutability rules. Getting this wrong causes either compilation errors or expensive unnecessary gas usage.",
+      "properties": [
+        {
+          "term": "storage",
+          "desc": "Permanent blockchain data. Persists forever. Most expensive: SSTORE costs 20,000 gas (new slot) or 5,000 gas (update). All state variables live here automatically."
+        },
+        {
+          "term": "memory",
+          "desc": "Temporary — exists only during function execution. Cheap: ~3 gas per byte. Must declare for reference types (strings, arrays, structs) inside functions. Erased after call."
+        },
+        {
+          "term": "calldata",
+          "desc": "Read-only external input. Cheapest option for function parameters in external functions. Cannot be modified. Use for string and bytes parameters you only need to read."
+        },
+        {
+          "term": "When to Use Each",
+          "desc": "State that persists → storage (automatic). Temp computation inside function → memory. External function input you won't modify → calldata (saves gas)."
+        }
+      ],
+      "example": "function greet(string calldata _name) external pure returns (string memory) — calldata for input (read-only, cheap), memory for output (temp return value)"
+    },
+
+    {
+      "id": 11,
+      "type": "definition",
+      "title": "Functions — Defining Smart Contract Behavior",
+      "definition": "Functions are the executable units of a smart contract. They define what the contract CAN DO. Every interaction with a deployed contract — reading data, writing data, transferring ETH — goes through a function call.",
+      "keyPoints": [
+        "Syntax: function functionName(paramType paramName) visibility modifier returns(returnType) { body }",
+        "function add(uint a, uint b) public pure returns(uint) { return a + b; } — complete example",
+        "Parameters: type comes first, then name — e.g. uint a, bool flag, address user",
+        "Multiple return values: returns(uint, bool) — Solidity supports tuple returns natively",
+        "Named returns: returns(uint result) — you can assign to result and return; without explicit return keyword",
+        "Functions that modify state cost gas; functions that only read state are free when called off-chain (view/pure)",
+        "Fallback function: receive() external payable — called when ETH is sent to contract with no data"
+      ]
+    },
+
+    {
+      "id": 12,
+      "type": "two_column",
+      "title": "Function Visibility — Who Can Call What",
+      "leftTitle": "The 4 Visibility Levels",
+      "leftItems": [
+        "public — callable from ANYWHERE: inside the same contract, from child contracts, and from external wallets/contracts. Auto-generates a getter for state variables.",
+        "private — ONLY callable from within the exact same contract. NOT inherited by child contracts. Most restrictive.",
+        "internal — callable from within the contract AND from any child (derived) contract that inherits it. NOT externally callable.",
+        "external — ONLY callable from outside the contract (other contracts or wallets). Cannot be called internally with functionName() — must use this.functionName(). Most gas-efficient for large inputs."
+      ],
+      "rightTitle": "Practical Rules & Examples",
+      "rightItems": [
+        "uint private secret = 100; — state variable private: no auto-getter, no external access",
+        "function getSecret() public view returns(uint) { return secret; } — public function exposes private data in a controlled way",
+        "internal functions are the foundation of inheritance — OpenZeppelin uses them extensively",
+        "external + calldata is the cheapest combination for functions receiving large string or bytes arguments",
+        "Default visibility for functions in older Solidity was public — in 0.8.x you MUST declare it explicitly or get a compile error",
+        "Rule: start everything as private/internal; only open up to public/external what needs to be accessible",
+        "Security: private does NOT mean secret — all blockchain data is readable. It only restricts which code can call it."
+      ]
+    },
+
+    {
+      "id": 13,
+      "type": "two_column",
+      "title": "view vs pure — Reading the Blockchain",
+      "leftTitle": "view Functions",
+      "leftItems": [
+        "view means: this function READS state but does NOT modify it",
+        "Can access: state variables, block.timestamp, msg.sender, other view functions",
+        "FREE to call if called externally (off-chain by a wallet or dApp) — zero gas",
+        "Costs gas if called internally from a state-changing function (because it's part of a transaction)",
+        "Example: function getOwner() public view returns(address) { return owner; }",
+        "Example: function getBalance(address user) public view returns(uint) { return balances[user]; }",
+        "Compiler enforces: if a view function accidentally writes state, you get a compile error"
+      ],
+      "rightTitle": "pure Functions",
+      "rightItems": [
+        "pure means: function NEITHER reads NOR modifies any blockchain state",
+        "Cannot access: state variables, block.timestamp, msg.sender — nothing from the chain",
+        "Entirely self-contained mathematical or utility functions",
+        "FREE to call externally — pure functions are essentially off-chain computation",
+        "Example: function add(uint a, uint b) public pure returns(uint) { return a + b; }",
+        "Example: function percentage(uint amount, uint pct) public pure returns(uint) { return (amount * pct) / 100; }",
+        "Compiler enforces: if a pure function reads state, you get a compile error. Use pure as documentation + safety."
+      ]
+    },
+
+    {
+      "id": 14,
+      "type": "definition",
+      "title": "Constructor & msg.sender",
+      "definition": "The constructor is a special function that runs EXACTLY ONCE — during contract deployment. It is used to set the initial state of the contract. msg.sender is a global Solidity variable that always holds the address of whoever sent the current transaction or call.",
+      "keyPoints": [
+        "constructor() { } — no function keyword, no visibility specifier needed in Solidity 0.8.x",
+        "Runs at deployment time only — can never be called again after the contract is on-chain",
+        "Most common use: setting the contract owner — address public owner; constructor() { owner = msg.sender; }",
+        "msg.sender during constructor = the wallet address that deployed the contract (the deployer)",
+        "msg.sender during a normal function call = whoever called that function (could be a user or another contract)",
+        "msg.value — the amount of ETH (in wei) sent with the transaction; only accessible in payable functions",
+        "onlyOwner pattern: modifier onlyOwner() { require(msg.sender == owner, 'Not owner'); _; } — most common access control in Solidity"
+      ]
+    },
+
+    {
+      "id": 15,
+      "type": "stats",
+      "title": "Common Beginner Mistakes in Solidity",
+      "intro": "These mistakes are made by almost every student in their first week of Solidity. Knowing them in advance will save you hours of debugging. The Solidity compiler catches some but not all of these.",
+      "stats": [
+        { "value": "#1", "label": "Missing memory keyword" },
+        { "value": "#2", "label": "Wrong mutability modifier" },
+        { "value": "#3", "label": "Private = secret misconception" }
+      ],
+      "bullets": [
+        "MISTAKE 1 — Forgetting memory keyword on reference types: function test(string name) → COMPILE ERROR. Correct: function test(string memory name). Applies to string, bytes, arrays, structs in function parameters",
+        "MISTAKE 2 — Using view when the function modifies state: marking a function view but using assignment (=) or .push() inside it. Compiler catches this — 'Function declared as view, but this expression (potentially) modifies the state'",
+        "MISTAKE 3 — Thinking private means secret: private only prevents OTHER contracts from calling your function. ALL data in contract storage is publicly readable by anyone who queries the blockchain directly",
+        "MISTAKE 4 — Integer division truncates: 5 / 2 = 2 in Solidity, not 2.5. Solidity has no floating point. Multiply before dividing: (amount * percentage) / 100, not amount / 100 * percentage",
+        "MISTAKE 5 — msg.sender in a pure function: pure functions have no access to global variables. If you need msg.sender, use view or no modifier (state-changing). Compiler error: 'Function cannot be declared as pure'",
+        "MISTAKE 6 — Accessing mapping with non-existent key expecting an error: Solidity silently returns the default value (0, false, address(0)) — no KeyError. You must validate separately with require()"
+      ]
+    },
+
+    {
+      "id": 16,
+      "type": "two_column",
+      "title": "Practical — Student Registry Smart Contract",
+      "leftTitle": "Contract Code",
+      "leftItems": [
+        "// SPDX-License-Identifier: MIT",
+        "pragma solidity ^0.8.20;",
+        "contract StudentRegistry {",
+        "  struct Student { string name; uint age; }",
+        "  Student[] public students;",
+        "  function addStudent(string memory _name, uint _age) public { students.push(Student(_name, _age)); }",
+        "  function getStudentsCount() public view returns(uint) { return students.length; }",
+        "}"
+      ],
+      "rightTitle": "What This Contract Teaches",
+      "rightItems": [
+        "struct — groups name (string) and age (uint) into one Student type; analogous to a row in a database table",
+        "Student[] public students — a dynamic array of Student structs stored permanently in contract storage",
+        "string memory _name — parameter uses memory because string is a reference type; underscore prefix is convention for parameters",
+        "students.push(Student(_name, _age)) — creates a new Student struct inline and appends it to the array",
+        "students.length — built-in property of all arrays; returns current count as uint",
+        "public view returns(uint) — getStudentsCount reads state, returns nothing on-chain, zero gas for external calls",
+        "Test in Remix: addStudent('Ali', 20) then addStudent('Sara', 22) then call getStudentsCount() — should return 2"
+      ]
+    },
+
+    {
+      "id": 17,
+      "type": "applications",
+      "title": "Practical Tasks for Students",
+      "categories": [
+        {
+          "sector": "Task 1 — My Profile Contract",
+          "uses": "Create contract MyProfile. Store: name (string), age (uint), city (string). Add getter functions for each. Deploy and test in Remix."
+        },
+        {
+          "sector": "Task 2 — Calculator Contract",
+          "uses": "Create Calculator with: add(uint a, uint b), subtract, multiply, divide, modulus. All pure functions. Test all operations in Remix."
+        },
+        {
+          "sector": "Task 3 — Todo List Contract",
+          "uses": "Store a struct Task { string title; bool completed; }. Dynamic array of Tasks. addTask(string memory _title). markComplete(uint index)."
+        },
+        {
+          "sector": "Homework — Student Management",
+          "uses": "Extend StudentRegistry: add updateStudent(uint index, string memory _name, uint _age), deleteStudent(uint index), mapping(address => uint) studentCount per address."
+        },
+        {
+          "sector": "Challenge — Access Control",
+          "uses": "Add constructor that sets owner = msg.sender. Create modifier onlyOwner(). Restrict addStudent to onlyOwner. Test: non-owner call should revert."
+        },
+        {
+          "sector": "Exploration — Remix Tools",
+          "uses": "Use Remix debugger to step through addStudent transaction. Inspect: stack, memory, storage slots. Use Remix Gas Profiler to compare view vs state-changing calls."
+        }
+      ]
+    },
+
+    {
+      "id": 18,
+      "type": "two_column",
+      "title": "Important Questions — Test Your Understanding",
+      "leftTitle": "Concept Questions",
+      "leftItems": [
+        "Q1: What is the difference between storage and memory? Which is permanent and which is temporary? Which costs more gas?",
+        "Q2: What is the difference between view and pure? Can a view function modify state? Can a pure function read msg.sender?",
+        "Q3: What is msg.sender? What does it return when a contract calls another contract?",
+        "Q4: Why do we use uint instead of int for most counters, balances, and IDs in Solidity?",
+        "Q5: What is the difference between a state variable and a local variable? Where is each stored?"
+      ],
+      "rightTitle": "Code Questions",
+      "rightItems": [
+        "Q6: What is wrong with this? function test(string name) public pure returns(string) { return name; }",
+        "Q7: What visibility modifier allows child contracts to call a function but blocks external callers?",
+        "Q8: What is the default value of an uninitialized address variable in Solidity?",
+        "Q9: How many times does the constructor run? When exactly does it run?",
+        "Q10: You have mapping(address => uint) public balances. User 0xABC never deposited. What does balances[0xABC] return?",
+        "Q11: Why is 7 / 2 = 3 in Solidity and not 3.5? How do you handle decimal math in Solidity?",
+        "Q12: What does the public keyword do when applied to a state variable like uint public age = 25?"
+      ]
+    },
+
+    {
+      "id": 19,
+      "type": "definition",
+      "title": "Helpful Resources & Tools",
+      "definition": "These are the official, most reliable resources for Solidity development. Bookmark all of them. The Solidity documentation is your primary reference — most answers to syntax questions are there.",
+      "keyPoints": [
+        "Solidity Official Docs — docs.soliditylang.org — full language reference, examples, security patterns; version-specific docs available for every release",
+        "Remix IDE — remix.ethereum.org — browser-based; no installation; supports compile, deploy, debug, gas profiling; perfect for all lecture practicals",
+        "OpenZeppelin Contracts — docs.openzeppelin.com/contracts — audited, production-ready base contracts; ERC-20, ERC-721, Ownable, AccessControl — never write these from scratch",
+        "Ethereum Official — ethereum.org/developers — tutorials, developer guides, EIP specifications, Solidity by Example",
+        "Alchemy Sepolia Faucet — sepoliafaucet.com — get free Sepolia testnet ETH for deploying contracts; requires an Alchemy account",
+        "Etherscan Sepolia — sepolia.etherscan.io — explore your deployed test contracts, verify source code, inspect transactions and events"
+      ]
+    },
+
+    {
+      "id": 20,
+      "type": "summary",
+      "title": "Lecture #2 Summary — Key Takeaways",
+      "points": [
+        "Every Solidity file must start with SPDX license identifier and pragma solidity version — these are mandatory, not optional",
+        "Solidity is statically typed: uint, int, bool, string, address, bytes32 — every variable must declare its type explicitly before use",
+        "State variables live permanently in blockchain storage; local variables live temporarily in memory during a single function call",
+        "Three data locations: storage (permanent, expensive), memory (temporary, cheap), calldata (read-only, cheapest) — use the right one or pay unnecessary gas",
+        "Four visibility levels: public (everyone), private (same contract only), internal (contract + children), external (outside only) — default to private, open up only what must be accessible",
+        "view reads state without changing it (free externally); pure neither reads nor changes state (free externally); both are enforced by the compiler",
+        "Constructor runs exactly once at deployment — use it to set owner = msg.sender and initialize critical state",
+        "You can now build real smart contracts: Student Registry, Calculator, Todo List — deploy these on Remix and Sepolia testnet for practice"
+      ],
+      "closing": "Master these fundamentals and every advanced Solidity concept — ERC-20, NFTs, DeFi — becomes a natural extension."
+    }
+
+  ]
+}
