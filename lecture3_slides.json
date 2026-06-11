@@ -1,0 +1,363 @@
+{
+  "title": "Solidity — Arrays, Structs, Mappings & Storage vs Memory",
+  "author": "Blockchain Lectures",
+  "theme": {
+    "primary": "0D1B2A",
+    "accent": "00C2FF",
+    "light": "E8F4FD",
+    "white": "FFFFFF",
+    "muted": "8899AA",
+    "cardBg": "F0F8FF",
+    "darkCard": "142236"
+  },
+  "slides": [
+
+    {
+      "id": 1,
+      "type": "title",
+      "title": "Arrays, Structs & Mappings",
+      "subtitle": "Lecture #3 — How Real Applications Store Data in Solidity",
+      "tagline": "Master these three data structures and you can build Student Systems, DeFi protocols, NFT projects and DAOs",
+      "footer": "2nd Semester Bachelor — Blockchain & Solidity Development | 2025"
+    },
+
+    {
+      "id": 2,
+      "type": "agenda",
+      "title": "Lecture #3 — Outline",
+      "items": [
+        { "num": "01", "label": "Revision of Lecture 2 " },
+        { "num": "02", "label": "Why We Need Data Structure " },
+        { "num": "03", "label": "Arrays — Basics & Syntax " },
+        { "num": "04", "label": "Arrays — push, pop, length " },
+        { "num": "05", "label": "Structs — Custom Data Types " },
+        { "num": "06", "label": "Struct Arrays — Multiple Records " },
+        { "num": "07", "label": "Mappings — Key-Value Storage " },
+        { "num": "08", "label": "Mapping + Struct — Real Pattern " },
+        { "num": "09", "label": "Storage vs Memory " },
+        { "num": "10", "label": "Practical: Student Management System " }
+      ]
+    },
+
+    {
+      "id": 3,
+      "type": "definition",
+      "title": "Revision — What We Learned in Lecture 2",
+      "definition": "In Lecture 2 we learned the complete foundation of Solidity programming. Today we build directly on top of that foundation to store and manage collections of real-world data.",
+      "keyPoints": [
+        "Data types: uint, int, bool, string, address — every variable has an explicit type in Solidity",
+        "State variables vs local variables — state persists on blockchain; local exists only during function call",
+        "Storage (permanent, costly) vs Memory (temporary, cheap) vs Calldata (read-only, cheapest)",
+        "Functions: visibility (public, private, internal, external), view (reads state), pure (no state access)",
+        "Constructor: runs once at deployment; msg.sender = the deployer address; used to set contract owner",
+        "So far we stored SINGLE values only — string public name; uint public age — today we store COLLECTIONS"
+      ]
+    },
+
+    {
+      "id": 4,
+      "type": "definition",
+      "title": "Why We Need Data Structures",
+      "definition": "Until now we stored one value at a time. Real applications need to store hundreds or thousands of records — students, employees, products, voters, users. Declaring individual variables for each record is impossible. Solidity solves this with three powerful data structures.",
+      "keyPoints": [
+        "Problem: storing 500 students with uint mark1; uint mark2; ... uint mark500; is completely impractical",
+        "Arrays — store multiple values of the SAME type in order: marks of all students, list of all addresses",
+        "Structs — group DIFFERENT types under one name: a Student has a name (string), age (uint), department (string)",
+        "Mappings — link a KEY to a VALUE like a lookup table: address → balance, address → user profile",
+        "These three structures are the backbone of EVERY real Solidity contract — ERC-20 tokens use mappings for balances, NFT contracts use arrays for token lists, DAOs use mappings for voter records",
+        "By the end of today you will build a complete Student Management System using all three"
+      ]
+    },
+
+    {
+      "id": 5,
+      "type": "visual_array",
+      "title": "Arrays — Storing Multiple Values of the Same Type",
+      "subtitle": "Topic 1 — Arrays",
+      "explanation": "An array is a collection of multiple values of the same data type stored in sequence. Each value occupies a numbered position called an index, starting at 0. Instead of declaring four separate variables for four marks, you declare one array.",
+      "problem": "Without arrays — messy and unscalable:",
+      "problemCode": "uint mark1 = 90;\nuint mark2 = 85;\nuint mark3 = 78;\nuint mark4 = 95;",
+      "solution": "With arrays — clean and scalable:",
+      "solutionCode": "uint[] public marks;\n// stores: [90, 85, 78, 95]",
+      "indexLabel": "Index",
+      "indexRows": [
+        { "index": "0", "value": "90" },
+        { "index": "1", "value": "85" },
+        { "index": "2", "value": "78" },
+        { "index": "3", "value": "95" }
+      ],
+      "note": "Index always starts at 0 — first element is marks[0], second is marks[1], and so on"
+    },
+
+    {
+      "id": 6,
+      "type": "code_slide",
+      "title": "Arrays — Complete Code Example",
+      "subtitle": "Deploy this in Remix and test step by step",
+      "codeBlocks": [
+        {
+          "label": "Full Contract",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract ArraysDemo {\n\n    uint[] public numbers;\n\n    // add a number to the array\n    function addNumber(uint _number) public {\n        numbers.push(_number);\n    }\n\n    // get total count of numbers\n    function getLength() public view returns (uint) {\n        return numbers.length;\n    }\n\n    // remove the last number\n    function removeLast() public {\n        numbers.pop();\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "uint[] public numbers — declares a dynamic array of unsigned integers; starts empty []",
+        "numbers.push(_number) — appends the new value to the END of the array; array grows by 1",
+        "numbers.length — built-in property; returns current count of elements as uint",
+        "numbers.pop() — removes and deletes the LAST element; array shrinks by 1; cannot pop from empty array",
+        "numbers(0) in Remix — the public keyword auto-generates a getter that accepts an index",
+        "Fixed-size array syntax: uint[5] public fixed — size is locked at compile time; no push or pop allowed"
+      ],
+      "practicalSteps": [
+        "Deploy the contract in Remix",
+        "Call addNumber(10) → addNumber(20) → addNumber(30)",
+        "Call numbers(0) → 10 | numbers(1) → 20 | numbers(2) → 30",
+        "Call getLength() → 3",
+        "Call removeLast() then getLength() → 2"
+      ]
+    },
+
+    {
+      "id": 7,
+      "type": "visual_array",
+      "title": "Structs — Grouping Related Data Together",
+      "subtitle": "Topic 2 — Structs",
+      "explanation": "A struct is a custom data type that groups multiple different types under one name. Think of it like a row in a database table — each column can be a different type. Arrays store one type; structs group many types for one record.",
+      "problem": "Problem — an array cannot store different types together:",
+      "problemCode": "// WRONG — cannot mix types in one array\n// name? age? department? — three different types",
+      "solution": "Solution — a struct holds all fields in one record:",
+      "solutionCode": "struct Student {\n    string name;\n    uint   age;\n    string department;\n}",
+      "indexLabel": "Field",
+      "indexRows": [
+        { "index": "name",       "value": "Ali" },
+        { "index": "age",        "value": "20" },
+        { "index": "department", "value": "CS" }
+      ],
+      "note": "A struct is like a template — you define it once and then create as many Student instances as you need"
+    },
+
+    {
+      "id": 8,
+      "type": "code_slide",
+      "title": "Structs — Complete Code Example",
+      "subtitle": "A single student record with getter and setter",
+      "codeBlocks": [
+        {
+          "label": "Full Contract",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract StructDemo {\n\n    struct Student {\n        string name;\n        uint   age;\n        string department;\n    }\n\n    // one Student stored on-chain\n    Student public student;\n\n    // set student data\n    function setStudent(\n        string memory _name,\n        uint _age,\n        string memory _department\n    ) public {\n        student = Student(_name, _age, _department);\n    }\n\n    // get student name only\n    function getName() public view returns (string memory) {\n        return student.name;\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "struct Student { } — defines the template; this does NOT create any variable or use storage yet",
+        "Student public student — NOW we declare one actual Student variable in contract storage",
+        "student = Student(_name, _age, _department) — creates a new Student instance and stores it",
+        "student.name — dot notation accesses individual fields of the struct",
+        "string memory — reference types in function parameters MUST declare memory or calldata location",
+        "The public auto-getter for a struct returns ALL fields at once as a tuple in Remix"
+      ],
+      "practicalSteps": [
+        "Deploy the contract",
+        "Call setStudent('Ali', 20, 'Computer Science')",
+        "Click the student button → see all three fields returned",
+        "Call getName() → 'Ali'",
+        "Call setStudent('Sara', 22, 'AI') to overwrite — only one record is stored"
+      ]
+    },
+
+    {
+      "id": 9,
+      "type": "code_slide",
+      "title": "Struct Arrays — Storing Multiple Records",
+      "subtitle": "Combining structs + arrays to store a list of students",
+      "codeBlocks": [
+        {
+          "label": "Full Contract",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract StudentList {\n\n    struct Student {\n        string name;\n        uint   age;\n    }\n\n    // array of Student structs\n    Student[] public students;\n\n    // add a new student to the list\n    function addStudent(\n        string memory _name,\n        uint _age\n    ) public {\n        students.push(Student(_name, _age));\n    }\n\n    // get total number of students\n    function getCount() public view returns (uint) {\n        return students.length;\n    }\n\n    // get one student by index\n    function getStudent(uint _index)\n        public view\n        returns (string memory, uint)\n    {\n        Student memory s = students[_index];\n        return (s.name, s.age);\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "Student[] public students — an array where EACH element is a full Student struct (not just a uint)",
+        "students.push(Student(_name, _age)) — creates a Student struct inline and appends it to the array",
+        "students.length — works identically on struct arrays; returns total number of Student records",
+        "Student memory s = students[_index] — copies one struct from storage into memory for reading; cheaper than multiple storage reads",
+        "Returns a tuple (string memory, uint) — Solidity supports multiple return values natively",
+        "This pattern is the foundation of NFT ownership lists, employee registries, product catalogs"
+      ],
+      "practicalSteps": [
+        "Deploy and call addStudent('Ali', 20)",
+        "Call addStudent('Ahmed', 22) and addStudent('Sara', 21)",
+        "Call students(0) → ('Ali', 20) | students(1) → ('Ahmed', 22)",
+        "Call getCount() → 3",
+        "Call getStudent(2) → ('Sara', 21)"
+      ]
+    },
+
+    {
+      "id": 10,
+      "type": "visual_mapping",
+      "title": "Mappings — The Most Important Data Structure",
+      "subtitle": "Topic 3 — Mappings (spend time here)",
+      "explanation": "A mapping is a key-value store — like a lookup table or a dictionary. You give it a key, it instantly returns the associated value. Think of a bank: given an account number (key), it returns the balance (value). In Ethereum, the key is almost always an address.",
+      "realWorld": "Real-world analogy — a bank ledger:",
+      "mappingRows": [
+        { "key": "0xAAA...111", "arrow": "→", "value": "100 ETH" },
+        { "key": "0xBBB...222", "arrow": "→", "value": "500 ETH" },
+        { "key": "0xCCC...333", "arrow": "→", "value": "900 ETH" }
+      ],
+      "syntax": "mapping(address => uint) public balances;",
+      "syntaxNote": "address is the KEY type — uint is the VALUE type — any types can be used"
+    },
+
+    {
+      "id": 11,
+      "type": "code_slide",
+      "title": "Mappings — Complete Code Example",
+      "subtitle": "Store and retrieve balances per wallet address",
+      "codeBlocks": [
+        {
+          "label": "Full Contract",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract MappingDemo {\n\n    // address maps to a balance\n    mapping(address => uint) public balances;\n\n    // store balance for the caller\n    function setBalance(uint _amount) public {\n        balances[msg.sender] = _amount;\n    }\n\n    // read balance of any address\n    function getBalance(address _addr)\n        public view returns (uint)\n    {\n        return balances[_addr];\n    }\n\n    // add to caller's existing balance\n    function addToBalance(uint _amount) public {\n        balances[msg.sender] += _amount;\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "mapping(address => uint) — the KEY is an address, the VALUE is a uint; declared in storage automatically",
+        "balances[msg.sender] = _amount — writes to the mapping; msg.sender is the wallet calling this function",
+        "balances[_addr] — reads from the mapping; reading an address that never set a balance returns 0 (default) — no error",
+        "balances[msg.sender] += _amount — read-then-write in one line; increments existing value",
+        "Mappings CANNOT be iterated — you cannot loop over all keys; you must know the key to access the value",
+        "Mappings CANNOT be passed as function arguments or returned from functions — storage only"
+      ],
+      "practicalSteps": [
+        "Deploy with Wallet A — call setBalance(100)",
+        "Switch to Wallet B in Remix — call setBalance(500)",
+        "Switch back to Wallet A — call getBalance(WalletA address) → 100",
+        "Call getBalance(WalletB address) → 500",
+        "Query a random address → returns 0 (not an error)"
+      ]
+    },
+
+    {
+      "id": 12,
+      "type": "code_slide",
+      "title": "Mapping + Struct — Real-World Pattern",
+      "subtitle": "Every wallet stores its own full profile — the most common DeFi pattern",
+      "codeBlocks": [
+        {
+          "label": "Full Contract",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract UserRegistry {\n\n    struct User {\n        string name;\n        uint   age;\n        bool   registered;\n    }\n\n    // each address maps to its own User struct\n    mapping(address => User) public users;\n\n    // register the calling wallet\n    function register(\n        string memory _name,\n        uint _age\n    ) public {\n        require(!users[msg.sender].registered,\n            'Already registered');\n        users[msg.sender] = User(_name, _age, true);\n    }\n\n    // check if an address is registered\n    function isRegistered(address _addr)\n        public view returns (bool)\n    {\n        return users[_addr].registered;\n    }\n\n    // get name of any registered user\n    function getName(address _addr)\n        public view returns (string memory)\n    {\n        require(users[_addr].registered, 'Not registered');\n        return users[_addr].name;\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "mapping(address => User) — the value is a full struct, not just a uint; each address owns a unique profile",
+        "users[msg.sender] = User(_name, _age, true) — creates a User struct inline and stores it at msg.sender's slot",
+        "!users[msg.sender].registered — dot notation works on mapped structs; checks the bool field",
+        "require(!users[msg.sender].registered, 'Already registered') — prevents duplicate registration",
+        "This exact pattern is used in: ERC-20 token balances (mapping(address=>uint)), NFT ownership (mapping(uint=>address)), DeFi staking (mapping(address=>StakeInfo struct))",
+        "users[_addr].name — you can access individual struct fields directly through the mapping"
+      ],
+      "practicalSteps": [
+        "Deploy — call register('Ali', 20) with Wallet A",
+        "Call isRegistered(WalletA) → true",
+        "Call getName(WalletA) → 'Ali'",
+        "Call register('Ali', 20) again with same wallet → REVERTS: 'Already registered'",
+        "Switch to Wallet B — call register('Sara', 22) — each wallet has its own profile"
+      ]
+    },
+
+    {
+      "id": 13,
+      "type": "two_column",
+      "title": "Storage vs Memory — Where Does Data Live?",
+      "leftTitle": "Storage — Permanent Blockchain Data",
+      "leftItems": [
+        "Lives permanently on the blockchain — survives after the function ends, after the transaction, forever",
+        "All state variables (declared outside functions) are automatically in storage",
+        "SSTORE opcode: writing to storage costs 20,000 gas for a new slot, 5,000 gas to update — the most expensive EVM operation",
+        "SLOAD opcode: reading storage costs 2,100 gas (cold access) or 100 gas (warm access, EIP-2929)",
+        "Example: Student[] public students — the array and all its elements live in storage permanently",
+        "Example: mapping(address => uint) public balances — every balance stored forever on-chain",
+        "Gas tip: minimize storage writes; batch updates; use events for data that does not need on-chain queries"
+      ],
+      "rightTitle": "Memory — Temporary Function Data",
+      "rightItems": [
+        "Lives only during the execution of ONE function call — completely erased when the function returns",
+        "Required keyword for reference types (string, bytes, arrays, structs) in function parameters and local variables",
+        "Cost: ~3 gas per byte — roughly 100x cheaper than storage for the same data",
+        "Example: string memory _name — the string lives in memory during the function; not stored unless you write it to a state variable",
+        "Example: Student memory s = students[0] — copies struct from storage to memory for cheap local access",
+        "Cannot return memory variables from external calls that persist — memory is per-call only",
+        "Rule: if data only needs to exist during computation, use memory; if it must persist, write it to a storage state variable"
+      ]
+    },
+
+    {
+      "id": 14,
+      "type": "code_slide",
+      "title": "Practical Project — Student Management System",
+      "subtitle": "The complete contract combining Arrays + Structs + Mappings",
+      "codeBlocks": [
+        {
+          "label": "Full Contract",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract StudentManagement {\n\n    struct Student {\n        string name;\n        uint   age;\n        string department;\n    }\n\n    Student[] public students;\n\n    mapping(address => bool) public hasRegistered;\n\n    // add a student — one registration per wallet\n    function addStudent(\n        string memory _name,\n        uint _age,\n        string memory _department\n    ) public {\n        require(!hasRegistered[msg.sender],\n            'You already registered a student');\n        students.push(Student(_name, _age, _department));\n        hasRegistered[msg.sender] = true;\n    }\n\n    // get total students\n    function getTotalStudents()\n        public view returns (uint)\n    {\n        return students.length;\n    }\n\n    // get one student by index\n    function getStudent(uint _index)\n        public view\n        returns (string memory, uint, string memory)\n    {\n        require(_index < students.length, 'Index out of range');\n        Student memory s = students[_index];\n        return (s.name, s.age, s.department);\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "struct Student — custom type grouping name, age, department (three different types)",
+        "Student[] public students — array of structs; stores every student permanently on-chain",
+        "mapping(address => bool) hasRegistered — prevents one wallet from registering multiple times",
+        "require(!hasRegistered[msg.sender]) — guard check at the top of addStudent; reverts if already registered",
+        "students.push(Student(_name, _age, _department)) — creates and appends a new Student in one line",
+        "require(_index < students.length) — prevents array out-of-bounds access; always validate index",
+        "Student memory s = students[_index] — copies to memory first; more gas-efficient for multiple field reads"
+      ],
+      "practicalSteps": [
+        "Deploy — addStudent('Ali', 20, 'CS') with Wallet A",
+        "addStudent('Ahmed', 22, 'EE') with Wallet B",
+        "addStudent('Sara', 21, 'AI') with Wallet C",
+        "getTotalStudents() → 3",
+        "getStudent(0) → ('Ali', 20, 'CS') | getStudent(2) → ('Sara', 21, 'AI')",
+        "Try addStudent again with Wallet A → REVERTS: 'You already registered a student'"
+      ]
+    },
+
+    {
+      "id": 15,
+      "type": "two_column",
+      "title": "Real-World Connections — Why This Matters",
+      "leftTitle": "These Patterns Power Real Protocols",
+      "leftItems": [
+        "ERC-20 Token Contract — uses mapping(address => uint256) balances to store every holder's token balance; mapping(address => mapping(address => uint256)) allowances for approvals",
+        "NFT (ERC-721) Contract — uses mapping(uint256 => address) ownerOf to store who owns each token ID; mapping(address => uint256) balanceOf for count",
+        "DeFi Staking Protocol — uses mapping(address => StakeInfo) stakes where StakeInfo is a struct with { uint amount; uint timestamp; uint rewards }",
+        "DAO Voting System — uses mapping(address => bool) hasVoted to prevent double voting; struct Proposal { string title; uint yesVotes; uint noVotes; bool executed }",
+        "Marketplace Contract — uses Listing[] public listings (struct array) to display all active listings; mapping(uint => address) seller to track who listed each item"
+      ],
+      "rightTitle": "What You Can Build Now",
+      "rightItems": [
+        "Student Management System — struct for student record + array to list all students + mapping to prevent duplicates",
+        "Simple Token — mapping(address => uint) balances + transfer function + events (next lecture)",
+        "Voting Contract — struct Candidate with name + voteCount + array of all candidates + mapping to prevent double voting",
+        "Product Registry — struct Product with name, price, stock + array for listing + mapping(address => Product[]) for per-seller products",
+        "Todo List — struct Task with title + bool completed + array of tasks + owner-only access via msg.sender",
+        "User Profile System — mapping(address => User) where User struct has name, age, bio + register() + update() functions"
+      ]
+    },
+
+    {
+      "id": 16,
+      "type": "summary",
+      "title": "Lecture #3 Summary — Key Takeaways",
+      "points": [
+        "Arrays store multiple values of the same type in order — uint[] uses push() to add, pop() to remove last, .length for count",
+        "Structs define a custom data type grouping different types under one name — like a database row with named columns",
+        "Struct Arrays combine both: Student[] stores hundreds of full Student records permanently on-chain",
+        "Mappings are key-value stores — mapping(address => uint) gives instant O(1) lookup; unset keys return default value (0, false, address(0)) — never an error",
+        "Mapping + Struct is the most powerful real-world pattern — every DeFi protocol, NFT project, and DAO uses it",
+        "Storage is permanent and expensive (20,000 gas per new slot); Memory is temporary and cheap (3 gas/byte) — always declare memory for reference type function parameters",
+        "You can now build: Student Management System, simple Token, Voting Contract, User Registry — all the foundational dApp patterns"
+      ],
+      "closing": "Arrays, Structs, and Mappings are the foundation of every real Solidity contract — from ERC-20 tokens to DeFi protocols to NFTs."
+    }
+
+  ]
+}
