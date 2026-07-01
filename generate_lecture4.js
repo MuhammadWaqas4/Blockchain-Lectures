@@ -13,13 +13,13 @@ const fs      = require("fs");
 const os      = require("os");
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-const JSON_FILE   = path.join(__dirname, "lecture3_slides.json");
+const JSON_FILE   = path.join(__dirname, "lecture4_slides.json");
 const OUTPUT_PATH = path.join(
   os.homedir(),
   "Desktop", "Drive (D) work", "Drive (Extra)",
   "work", "Blockchain-Lectures", "slides"
 );
-const OUTPUT_FILE = "Lecture3_Arrays_Structs_Mappings.pptx";
+const OUTPUT_FILE = "Lecture4_Solidity_Function_types.pptx";
 // ──────────────────────────────────────────────────────────────────────────────
 
 const data = JSON.parse(fs.readFileSync(JSON_FILE, "utf8"));
