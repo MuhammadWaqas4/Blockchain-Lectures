@@ -1,0 +1,454 @@
+{
+  "title": "Solidity Functions & Smart Contract Logic",
+  "author": "Blockchain Lectures",
+  "theme": {
+    "primary": "0D1B2A",
+    "accent": "00C2FF",
+    "light": "E8F4FD",
+    "white": "FFFFFF",
+    "muted": "8899AA",
+    "cardBg": "F0F8FF",
+    "darkCard": "142236"
+  },
+  "slides": [
+
+    {
+      "id": 1,
+      "type": "title",
+      "title": "Solidity Functions & Smart Contract Logic",
+      "subtitle": "Lecture #4 — State Changes, Payable, msg.sender & Error Handling",
+      "tagline": "Storage is the memory. Functions are the actions. Together they make a smart contract alive.",
+      "footer": "2nd Semester Bachelor — Blockchain & Solidity Development | 2025"
+    },
+
+    {
+      "id": 2,
+      "type": "agenda",
+      "title": "Lecture #4 — Outline (2 Hours)",
+      "items": [
+        { "num": "01", "label": "Revision of Lecture 3 (10 min)" },
+        { "num": "02", "label": "Function Anatomy — Every Part Explained (20 min)" },
+        { "num": "03", "label": "view vs pure — Reading the Chain (20 min)" },
+        { "num": "04", "label": "State Changing Functions + Gas (25 min)" },
+        { "num": "05", "label": "msg.sender — Who Is Calling? (20 min)" },
+        { "num": "06", "label": "payable Functions — Receiving ETH (20 min)" },
+        { "num": "07", "label": "msg.value — How Much ETH Was Sent? (15 min)" },
+        { "num": "08", "label": "require() — Protecting the Contract (20 min)" },
+        { "num": "09", "label": "Practical: Simple Bank Contract (20 min)" },
+        { "num": "10", "label": "Summary + Homework (10 min)" }
+      ]
+    },
+
+    {
+      "id": 3,
+      "type": "definition",
+      "title": "Revision — Storage vs Functions",
+      "definition": "In the previous lectures we learned how Solidity stores data — variables, arrays, structs, and mappings. But storing data alone is useless. A smart contract needs LOGIC. Logic comes through functions. Storage is the memory. Functions are the actions.",
+      "keyPoints": [
+        "Variable — stores a single value: uint public age = 20",
+        "Array — stores multiple values of the same type: uint[] public marks",
+        "Struct — groups different types under one name: struct Student { string name; uint age; }",
+        "Mapping — links a key to a value: mapping(address => uint) public balances",
+        "Functions — define WHAT the contract does: read data, write data, receive ETH, validate conditions",
+        "Without functions, storage sits idle — functions are what make a smart contract BEHAVE like an application"
+      ]
+    },
+
+    {
+      "id": 4,
+      "type": "flow_diagram",
+      "title": "Smart Contract = Storage + Functions",
+      "subtitle": "The Two Pillars of Every Contract",
+      "leftTitle": "STORAGE",
+      "leftColor": "1A3A5C",
+      "leftAccent": "00C2FF",
+      "leftItems": [
+        "Variables",
+        "Arrays",
+        "Structs",
+        "Mappings"
+      ],
+      "leftDesc": "Permanent on-chain memory — the state",
+      "rightTitle": "FUNCTIONS",
+      "rightColor": "1A3A5C",
+      "rightAccent": "00FFAA",
+      "rightItems": [
+        "Read data",
+        "Write data",
+        "Receive ETH",
+        "Enforce rules"
+      ],
+      "rightDesc": "On-chain actions — the behaviour",
+      "arrow": "→",
+      "outcome": "Change blockchain state",
+      "outcomeDesc": "Every function call that modifies storage creates a TRANSACTION recorded permanently on-chain"
+    },
+
+    {
+      "id": 5,
+      "type": "code_slide",
+      "title": "Part 1 — Function Anatomy: Every Word Explained",
+      "subtitle": "Break down each keyword — students must understand every piece before writing functions",
+      "codeBlocks": [
+        {
+          "label": "Complete Function — Labelled",
+          "code": "function add(uint a, uint b)\n    public\n    pure\n    returns(uint)\n{\n    return a + b;\n}"
+        }
+      ],
+      "keyPoints": [
+        "function — keyword that tells Solidity 'we are defining an action'",
+        "add — the function NAME; like a button label; called by users and other contracts",
+        "(uint a, uint b) — PARAMETERS: input data the caller must provide; uint a = first number, uint b = second number",
+        "public — VISIBILITY: who can call this; public = anyone (wallet, contract, or internally)",
+        "pure — MUTABILITY: this function neither reads nor writes blockchain storage; just pure math",
+        "returns(uint) — OUTPUT type: this function sends back one unsigned integer to the caller",
+        "return a + b — the actual computation; Solidity evaluates this and sends the result back"
+      ],
+      "practicalSteps": [
+        "Deploy Calculator contract in Remix",
+        "Call add(10, 20) → result: 30",
+        "Call add(100, 255) → result: 355",
+        "Notice: no transaction hash — pure functions are FREE (no gas when called externally)"
+      ]
+    },
+
+    {
+      "id": 6,
+      "type": "two_column",
+      "title": "Part 2 — view vs pure: Reading the Blockchain",
+      "leftTitle": "view — Reads Blockchain State",
+      "leftItems": [
+        "Can READ state variables but CANNOT modify them",
+        "Has access to: state variables, block.timestamp, msg.sender, block.number",
+        "FREE when called externally by a wallet or dApp (zero gas cost)",
+        "Costs gas only when called internally from a state-changing transaction",
+        "Example: function getAge() public view returns(uint) { return age; }",
+        "Use when: you need to return a stored value like a balance, name, or count",
+        "Compiler enforces: if view accidentally writes state → compile error"
+      ],
+      "rightTitle": "pure — No Blockchain Access At All",
+      "rightItems": [
+        "CANNOT read OR write any state variable — completely isolated",
+        "No access to: msg.sender, block.timestamp, storage variables — nothing from chain",
+        "Only works with its own input parameters and local variables",
+        "FREE when called externally — purely off-chain computation",
+        "Example: function multiply(uint a, uint b) public pure returns(uint) { return a * b; }",
+        "Use when: utility math functions, string manipulation, calculations with no chain data",
+        "Compiler enforces: if pure reads state → compile error — use as documentation + safety"
+      ]
+    },
+
+    {
+      "id": 7,
+      "type": "visual_flow",
+      "title": "view vs pure — Visual Comparison",
+      "subtitle": "Understand the data access difference at a glance",
+      "flows": [
+        {
+          "label": "view Function Flow",
+          "color": "00C2FF",
+          "steps": ["Storage", "view Function", "Read Only — no write", "Returns value"],
+          "note": "uint public age = 20; → getAge() reads and returns 20"
+        },
+        {
+          "label": "pure Function Flow",
+          "color": "00FFAA",
+          "steps": ["Input (a, b)", "pure Function", "Computation only", "Returns result"],
+          "note": "add(5, 10) → returns 15; never touches the blockchain"
+        }
+      ]
+    },
+
+    {
+      "id": 8,
+      "type": "code_slide",
+      "title": "Part 3 — State Changing Functions",
+      "subtitle": "Functions that WRITE to blockchain storage — these create real transactions and cost gas",
+      "codeBlocks": [
+        {
+          "label": "Counter Contract — State Change Demo",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract Counter {\n\n    uint public count;  // starts at 0 (default)\n\n    // STATE CHANGING — writes to storage\n    function increment() public {\n        count++;         // count = count + 1\n    }\n\n    function decrement() public {\n        count--;         // count = count - 1\n    }\n\n    function reset() public {\n        count = 0;       // set back to zero\n    }\n\n    // VIEW — only reads, no cost externally\n    function getCount() public view returns(uint) {\n        return count;\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "count++ — increments the state variable; this WRITES to blockchain storage slot 0",
+        "NO view or pure keyword — absence of these means the function modifies state",
+        "Every call to increment() creates a TRANSACTION: signed by wallet, broadcast to network, included in a block",
+        "Gas cost: each SSTORE (storage write) costs 20,000 gas for new slot or 5,000 gas to update existing",
+        "In Remix you will see: a green transaction hash and gas used in the console — this is proof of on-chain state change",
+        "Before increment(): count = 0 | After one call: count = 1 | After five calls: count = 5",
+        "getCount() is view — free when called by wallet; ONLY increment/decrement/reset cost gas"
+      ],
+      "practicalSteps": [
+        "Deploy Counter — count starts at 0",
+        "Call increment() → watch transaction appear in Remix console",
+        "Call count() → 1",
+        "Call increment() 4 more times → count = 5",
+        "Call reset() → count = 0",
+        "Observe: increment has a transaction hash, count (view) does not"
+      ]
+    },
+
+    {
+      "id": 9,
+      "type": "visual_flow",
+      "title": "How a State-Changing Transaction Works",
+      "subtitle": "What actually happens when increment() is called",
+      "flows": [
+        {
+          "label": "Transaction Journey",
+          "color": "00C2FF",
+          "steps": ["User signs tx in wallet", "Broadcast to network", "Validators include in block", "EVM executes function", "Storage updated on-chain"],
+          "note": "This entire process takes ~12 seconds on Ethereum. On testnets it may vary."
+        },
+        {
+          "label": "Gas Flow",
+          "color": "FFB347",
+          "steps": ["User sets gas limit", "EVM uses gas per opcode", "Unused gas refunded", "Used gas paid to validator", "State permanently saved"],
+          "note": "If gas runs out mid-execution → REVERT. All changes undone. Gas already used is NOT refunded."
+        }
+      ]
+    },
+
+    {
+      "id": 10,
+      "type": "code_slide",
+      "title": "Part 4 — msg.sender: Who Is Calling?",
+      "subtitle": "The most important global variable in Solidity — the identity of the caller",
+      "codeBlocks": [
+        {
+          "label": "User Identity Contract",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract UserIdentity {\n\n    address public owner;\n    address public lastCaller;\n\n    // constructor: runs once at deployment\n    constructor() {\n        owner = msg.sender; // deployer becomes owner\n    }\n\n    // saves whoever calls this function\n    function saveUser() public {\n        lastCaller = msg.sender;\n    }\n\n    // returns the caller's own address\n    function whoAmI() public view returns(address) {\n        return msg.sender;\n    }\n\n    // checks if caller is the owner\n    function isOwner() public view returns(bool) {\n        return msg.sender == owner;\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "msg.sender — a global Solidity variable; always equals the address of whoever called the current function",
+        "Type: address — it is a 20-byte Ethereum address like 0x742d...f44e",
+        "In constructor: msg.sender = the wallet that DEPLOYED the contract — use this to set the owner",
+        "In a regular function: msg.sender = whoever sent the transaction calling that function",
+        "If Contract A calls Contract B: msg.sender inside B = address of Contract A — not the original human wallet",
+        "tx.origin = the ORIGINAL human wallet (always) — but using tx.origin for auth is a security risk",
+        "msg.sender is the foundation of ALL access control in Solidity: onlyOwner, roles, allowlists"
+      ],
+      "practicalSteps": [
+        "Deploy — owner is automatically set to your MetaMask wallet",
+        "Call whoAmI() → returns your wallet address",
+        "Call isOwner() → true (you are the deployer)",
+        "Switch to a different account in Remix → call isOwner() → false",
+        "Call saveUser() from different account → lastCaller updates to that account"
+      ]
+    },
+
+    {
+      "id": 11,
+      "type": "visual_mapping",
+      "title": "msg.sender — The Caller Identity Flow",
+      "subtitle": "Part 4 — msg.sender",
+      "explanation": "Every time a function is called, msg.sender is automatically set by the EVM to the address that sent the transaction. It cannot be faked — the wallet's private key signs the transaction, and the EVM verifies the signature.",
+      "realWorld": "Who is msg.sender in each scenario:",
+      "mappingRows": [
+        { "key": "Ali calls deposit()",       "arrow": "→", "value": "msg.sender = Ali's address" },
+        { "key": "Sara calls transfer()",      "arrow": "→", "value": "msg.sender = Sara's address" },
+        { "key": "Contract A calls Contract B","arrow": "→", "value": "msg.sender = Contract A address" }
+      ],
+      "syntax": "owner = msg.sender;",
+      "syntaxNote": "Set in constructor to capture the deployer. Used with require() to restrict who can call sensitive functions."
+    },
+
+    {
+      "id": 12,
+      "type": "code_slide",
+      "title": "Part 5 — payable Functions: Receiving ETH",
+      "subtitle": "Without the payable keyword, a function CANNOT receive ETH — the transaction will REVERT",
+      "codeBlocks": [
+        {
+          "label": "Wallet Contract — Deposit & Balance",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract Wallet {\n\n    // payable: this function can receive ETH\n    function deposit() public payable {\n        // ETH is automatically credited\n        // to address(this).balance\n    }\n\n    // view the contract's ETH balance\n    function getBalance() public view returns(uint) {\n        return address(this).balance;\n    }\n\n    // receive ETH sent directly (no function call)\n    receive() external payable { }\n\n    // fallback for unknown calls with ETH\n    fallback() external payable { }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "payable — keyword that allows a function to accept ETH; without it, sending ETH to that function causes an automatic revert",
+        "address(this).balance — returns the total ETH balance held by THIS contract in wei (1 ETH = 1,000,000,000,000,000,000 wei)",
+        "Wei is the smallest ETH unit: 1 ETH = 10^18 wei; getBalance() returns a very large uint256 number",
+        "ETH sent to deposit() is credited to the contract's balance automatically by the EVM",
+        "receive() external payable — special function called when ETH is sent to the contract with NO function call data",
+        "fallback() external payable — called when ETH arrives with data that matches no known function signature",
+        "In Remix: change value to '1 ether' in the Value field, then call deposit() — check getBalance() shows 1000000000000000000"
+      ],
+      "practicalSteps": [
+        "Deploy Wallet contract",
+        "In Remix: set Value field to '1 ether'",
+        "Call deposit() — observe transaction succeeds",
+        "Call getBalance() → 1000000000000000000 (1 ETH in wei)",
+        "Send 0.5 ETH → call getBalance() → 1500000000000000000",
+        "Try calling deposit() with 0 ETH → getBalance() unchanged → still works (0 ETH deposited)"
+      ]
+    },
+
+    {
+      "id": 13,
+      "type": "code_slide",
+      "title": "Part 6 — msg.value: How Much ETH Was Sent?",
+      "subtitle": "msg.value gives you the exact amount of ETH the caller included in the transaction",
+      "codeBlocks": [
+        {
+          "label": "msg.value Demo Contract",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract ValueDemo {\n\n    mapping(address => uint) public deposits;\n\n    // returns the ETH amount sent with THIS call\n    function deposit() public payable returns(uint) {\n        deposits[msg.sender] += msg.value;\n        return msg.value; // how much was sent\n    }\n\n    // check minimum deposit\n    function depositMinimum() public payable {\n        require(\n            msg.value >= 0.01 ether,\n            'Minimum deposit is 0.01 ETH'\n        );\n        deposits[msg.sender] += msg.value;\n    }\n\n    // view own deposit total\n    function myDeposit() public view returns(uint) {\n        return deposits[msg.sender];\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "msg.value — uint256; the amount of ETH (in wei) included in the current transaction; only accessible in payable functions",
+        "msg.value = 0 for non-payable calls; attempting to access msg.value in a non-payable function = compile error",
+        "0.01 ether — Solidity understands ether as a unit suffix; 0.01 ether = 10000000000000000 wei (10^16)",
+        "Other unit suffixes: 1 wei, 1 gwei (10^9 wei), 1 ether (10^18 wei) — all compile-time constants",
+        "deposits[msg.sender] += msg.value — accumulates each caller's total ETH deposits in a mapping",
+        "require(msg.value >= 0.01 ether) — minimum payment enforcement; same pattern used in NFT minting contracts",
+        "Real DeFi use: Uniswap, Aave, Compound all use msg.value to receive ETH in their deposit/swap functions"
+      ],
+      "practicalSteps": [
+        "Deploy ValueDemo",
+        "Set Value to '1 ether' → call deposit() → returns 1000000000000000000",
+        "Call myDeposit() → 1000000000000000000",
+        "Set Value to '0.001 ether' → call depositMinimum() → REVERTS: 'Minimum deposit is 0.01 ETH'",
+        "Set Value to '0.05 ether' → call depositMinimum() → succeeds"
+      ]
+    },
+
+    {
+      "id": 14,
+      "type": "code_slide",
+      "title": "Part 7 — require(): Protecting the Contract",
+      "subtitle": "Smart contracts must validate all conditions before executing — require() is the primary guard",
+      "codeBlocks": [
+        {
+          "label": "require() + revert() Demo",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract AccessControl {\n\n    address public owner;\n    uint public vaultBalance;\n\n    constructor() {\n        owner = msg.sender;\n    }\n\n    // require: caller must be owner\n    function ownerAction() public view returns(string memory) {\n        require(msg.sender == owner, 'Not the owner');\n        return 'Welcome, Owner!';\n    }\n\n    // require: value must be positive\n    function deposit(uint _amount) public {\n        require(_amount > 0, 'Amount must be greater than 0');\n        vaultBalance += _amount;\n    }\n\n    // require: cannot withdraw more than balance\n    function withdraw(uint _amount) public {\n        require(msg.sender == owner, 'Not the owner');\n        require(_amount <= vaultBalance,\n            'Insufficient balance');\n        vaultBalance -= _amount;\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "require(condition, 'error message') — if condition is FALSE: transaction REVERTS; error message is returned; all state changes undone",
+        "require(condition, 'error message') — if condition is TRUE: execution continues normally to next line",
+        "Gas behaviour: all gas consumed UP TO the require() that failed is kept by validator; gas NOT yet used is refunded",
+        "Multiple require() in one function — each checked in order from top to bottom; first false one stops execution",
+        "revert('reason') — manually triggers a revert; identical behaviour to require(false, 'reason'); used in complex if-else logic",
+        "assert(condition) — for internal invariants that should NEVER be false; uses Panic error type; does NOT refund gas (use sparingly)",
+        "require() is used for: access control (only owner), input validation (amount > 0), state checks (not paused, sufficient balance)"
+      ],
+      "practicalSteps": [
+        "Deploy with Wallet A (owner) → call ownerAction() → 'Welcome, Owner!'",
+        "Switch to Wallet B → call ownerAction() → REVERTS: 'Not the owner'",
+        "Call deposit(0) → REVERTS: 'Amount must be greater than 0'",
+        "Call deposit(100) → succeeds → vaultBalance = 100",
+        "Call withdraw(200) as owner → REVERTS: 'Insufficient balance'",
+        "Call withdraw(50) as owner → succeeds → vaultBalance = 50"
+      ]
+    },
+
+    {
+      "id": 15,
+      "type": "visual_flow",
+      "title": "require() — Execution Flow",
+      "subtitle": "Part 7 — Error Handling",
+      "flows": [
+        {
+          "label": "When condition is TRUE",
+          "color": "00FFAA",
+          "steps": ["Function called", "require(condition)", "Condition = TRUE", "Execution continues", "State saved on-chain"],
+          "note": "Normal path — everything proceeds. Transaction succeeds. Gas used. Block recorded."
+        },
+        {
+          "label": "When condition is FALSE",
+          "color": "FF4444",
+          "steps": ["Function called", "require(condition)", "Condition = FALSE", "REVERT triggered", "All state changes undone"],
+          "note": "Protection path — error message returned. Gas up to revert is consumed. No state change persists."
+        }
+      ]
+    },
+
+    {
+      "id": 16,
+      "type": "code_slide",
+      "title": "Final Practical — Simple Bank Contract",
+      "subtitle": "Combines everything from this lecture: payable, msg.sender, msg.value, require() — a real DeFi foundation",
+      "codeBlocks": [
+        {
+          "label": "SimpleBank.sol — Full Contract",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract SimpleBank {\n\n    address public owner;\n    mapping(address => uint) public balances;\n\n    constructor() {\n        owner = msg.sender;\n    }\n\n    // receive ETH — credited to caller's balance\n    function deposit() public payable {\n        require(msg.value > 0, 'Send some ETH');\n        balances[msg.sender] += msg.value;\n    }\n\n    // view contract's total ETH\n    function getContractBalance()\n        public view returns(uint)\n    {\n        return address(this).balance;\n    }\n\n    // view caller's individual deposit\n    function myBalance() public view returns(uint) {\n        return balances[msg.sender];\n    }\n\n    // owner-only: welcome message\n    function ownerPanel()\n        public view returns(string memory)\n    {\n        require(msg.sender == owner, 'Not Owner');\n        return 'Welcome, Bank Owner!';\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "address public owner — set in constructor to msg.sender (deployer); used for access control",
+        "mapping(address => uint) public balances — each wallet tracks its own deposit total separately",
+        "deposit() payable — receives ETH; require(msg.value > 0) rejects zero-value calls; adds msg.value to caller's balance",
+        "address(this).balance — total ETH held by the contract across ALL depositors combined",
+        "balances[msg.sender] — each caller sees ONLY their own balance; complete isolation between users",
+        "ownerPanel() — require(msg.sender == owner) gatekeeps; anyone else calling gets revert 'Not Owner'",
+        "This is the foundation of: DeFi staking vaults, escrow contracts, multi-sig wallets, yield farming protocols"
+      ],
+      "practicalSteps": [
+        "Deploy — owner = your wallet",
+        "Wallet A: set value to '1 ether' → call deposit() → myBalance() = 1 ETH in wei",
+        "Wallet B: set value to '0.5 ether' → call deposit() → myBalance() = 0.5 ETH in wei",
+        "Call getContractBalance() → 1.5 ETH in wei (combined)",
+        "Wallet A: call myBalance() → only sees their 1 ETH (not Wallet B's)",
+        "Owner calls ownerPanel() → 'Welcome, Bank Owner!'",
+        "Non-owner calls ownerPanel() → REVERTS: 'Not Owner'"
+      ]
+    },
+
+    {
+      "id": 17,
+      "type": "two_column",
+      "title": "Real-World Connections — What You Can Build Now",
+      "leftTitle": "Patterns From This Lecture",
+      "leftItems": [
+        "State changing functions → any counter, vote tally, score tracker, inventory system",
+        "msg.sender + mapping → per-user data storage; every DeFi protocol uses mapping(address=>uint) for user balances",
+        "payable + msg.value → token sale (ICO), NFT mint price enforcement, crowdfunding contract, donation contract",
+        "require(msg.sender == owner) → admin panels, fee withdrawal, emergency pause — the onlyOwner pattern",
+        "require(msg.value >= price) → NFT mint: require(msg.value >= 0.08 ether, 'Wrong price') — exact same code used by real NFT projects",
+        "address(this).balance → treasury balance display in DAOs and staking contracts"
+      ],
+      "rightTitle": "Homework — Build These Contracts",
+      "rightItems": [
+        "Task 1: Voting Contract — add candidate names (array), vote() function increments count for a candidate, require that each address can only vote once using mapping(address => bool)",
+        "Task 2: Piggy Bank — deposit ETH, only owner can withdraw all ETH using transfer(), add require that balance > 0 before withdrawing",
+        "Task 3: Auction Contract — store highestBid (uint) and highestBidder (address), bid() function is payable; require new bid > highestBid; update both variables",
+        "Challenge: Add a minimum deposit amount to SimpleBank — require(msg.value >= 0.01 ether) and add an event Deposited(address indexed user, uint amount) that emits on every successful deposit",
+        "Explore: Read the Uniswap V2 Router source code on Etherscan — find msg.sender, msg.value, and require() usage in their swap functions"
+      ]
+    },
+
+    {
+      "id": 18,
+      "type": "definition",
+      "title": "Helpful Resources",
+      "definition": "These are the official references for every concept covered in this lecture. Bookmark them — professional Solidity developers use these daily. The Solidity docs are your primary source of truth for any syntax question.",
+      "keyPoints": [
+        "Solidity Functions Reference — docs.soliditylang.org/en/latest/contracts.html#functions — complete function syntax, modifiers, overloading, fallback, receive",
+        "Solidity Global Variables — docs.soliditylang.org/en/latest/units-and-global-variables.html — msg.sender, msg.value, block.timestamp, tx.origin, address(this).balance and all globals",
+        "Remix IDE — remix.ethereum.org — deploy, test, debug all contracts from this lecture; use the Debugger tab to step through transactions line by line",
+        "Ethereum Developer Docs — ethereum.org/en/developers/docs — transactions, gas, accounts, EVM explained with diagrams; essential background reading",
+        "Solidity by Example — solidity-by-example.org — short, focused contract examples for every concept; great for practice and homework reference",
+        "Etherscan Sepolia — sepolia.etherscan.io — deploy SimpleBank to Sepolia testnet; view your transactions, verify source code, interact via Etherscan's UI"
+      ]
+    },
+
+    {
+      "id": 19,
+      "type": "summary",
+      "title": "Lecture #4 Summary — Key Takeaways",
+      "points": [
+        "A function has five parts: keyword, name, parameters, visibility+mutability, return type — understand every word before writing",
+        "view reads state (free externally); pure does zero chain access (free externally); no modifier = state-changing (costs gas, creates a transaction)",
+        "State-changing functions write to storage with SSTORE — each call creates a signed transaction, broadcast to network, included in a block permanently",
+        "msg.sender is the 20-byte address of whoever called the function — the cornerstone of ALL access control in Solidity; set owner = msg.sender in constructor",
+        "payable functions can receive ETH; address(this).balance holds the contract's total ETH; msg.value holds exactly how much ETH this specific call included",
+        "require(condition, 'message') is your primary guard — false condition → REVERT; all state changes undone; error message returned to caller; gas up to revert is kept",
+        "SimpleBank combines all concepts: payable deposit, per-user mapping balances, owner access control with require, address(this).balance for total — the DeFi pattern"
+      ],
+      "closing": "Functions are the actions that bring storage to life. Master these seven concepts and you can read and write ANY real Solidity contract."
+    }
+
+  ]
+}
