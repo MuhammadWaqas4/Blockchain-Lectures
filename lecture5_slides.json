@@ -1,0 +1,483 @@
+{
+  "title": "Modifiers, Access Control & Error Handling",
+  "author": "Blockchain Lectures",
+  "theme": {
+    "primary": "0D1B2A",
+    "accent": "00C2FF",
+    "light": "E8F4FD",
+    "white": "FFFFFF",
+    "muted": "8899AA",
+    "cardBg": "F0F8FF",
+    "darkCard": "142236"
+  },
+  "slides": [
+
+    {
+      "id": 1,
+      "type": "title",
+      "title": "Modifiers, Access Control & Error Handling",
+      "subtitle": "Lecture #5 — Writing Secure, Clean, Professional Solidity",
+      "tagline": "Every professional Solidity contract — ERC20, NFT, DeFi, DAO — uses modifiers. This lecture shows you how.",
+      "footer": "2nd Semester Bachelor — Blockchain & Solidity Development | 2025"
+    },
+
+    {
+      "id": 2,
+      "type": "agenda",
+      "title": "Lecture #5 — Outline (2 Hours)",
+      "items": [
+        { "num": "01", "label": "Introduction & Real-Life Analogy" },
+        { "num": "02", "label": "The Problem — Code Duplication" },
+        { "num": "03", "label": "What is a Modifier?" },
+        { "num": "04", "label": "Modifier Syntax — Every Word Explained" },
+        { "num": "05", "label": "owner Variable + Constructor" },
+        { "num": "06", "label": "Practical 1 — OwnerExample Contract" },
+        { "num": "07", "label": "Practical 2 — Counter with onlyOwner" },
+        { "num": "08", "label": "Error Handling — require() Revision" },
+        { "num": "09", "label": "revert() — Custom Conditions" },
+        { "num": "10", "label": "assert() — Internal Bug Detection" },
+        { "num": "11", "label": "Practical 3 — All Three Error Tools" },
+        { "num": "12", "label": "Summary + Homework" }
+      ]
+    },
+
+    {
+      "id": 3,
+      "type": "definition",
+      "title": "Why Modifiers Matter — The Real-World Case",
+      "definition": "Every professional Solidity contract uses modifiers. Whether you are building an ERC-20 token, an NFT collection, a DeFi staking protocol, or a DAO — the same access control pattern appears everywhere. Today you will learn to write it the professional way.",
+      "keyPoints": [
+        "ERC-20 tokens: only the contract owner can mint new tokens or pause transfers — onlyOwner modifier on mint() and pause()",
+        "NFT projects: only the owner can set the base URI, reveal the collection, or withdraw ETH — onlyOwner on every admin function",
+        "DeFi staking: only the protocol admin can change reward rates, set fee receivers, or upgrade logic — protected by access control modifiers",
+        "DAO contracts: only approved governance proposals can execute on-chain actions — checked via modifier before any state change",
+        "OpenZeppelin (the most trusted Solidity library) ships Ownable.sol — a standard contract that provides the onlyOwner modifier — used in millions of deployed contracts",
+        "Goal of today: understand why modifiers exist, write them from scratch, and use all three Solidity error tools: require(), revert(), assert()"
+      ]
+    },
+
+    {
+      "id": 4,
+      "type": "analogy_slide",
+      "title": "Real-Life Analogy — The Bank Manager",
+      "subtitle": "Introduction — 10 min",
+      "analogy": "Imagine a bank. Any customer (Ali, Ahmed, Sara, John) can walk in, check balances, and make deposits. BUT only the Bank Manager can approve loans, change bank settings, or access the reserve account vault. Customers cannot do these things — not because they are bad people, but because those actions require special authority.",
+      "leftTitle": "CUSTOMERS — Public Access",
+      "leftColor": "1A4A2A",
+      "leftAccent": "00FFAA",
+      "leftItems": [
+        "Check own balance",
+        "Deposit money",
+        "Withdraw own funds",
+        "View public info"
+      ],
+      "rightTitle": "MANAGER — Restricted Access",
+      "rightColor": "4A1A1A",
+      "rightAccent": "FF4444",
+      "rightItems": [
+        "Approve loans",
+        "Change bank settings",
+        "Transfer from reserve",
+        "Hire / fire employees"
+      ],
+      "bottomNote": "In Solidity: public functions = customer counter. onlyOwner functions = manager's office. The modifier is the door with a keycard."
+    },
+
+    {
+      "id": 5,
+      "type": "code_slide",
+      "title": "The Problem — Code Duplication",
+      "subtitle": "Part 1 — Why modifiers exist: writing require() 50 times is a serious problem",
+      "codeBlocks": [
+        {
+          "label": "Bad Pattern — Same Code Written 3+ Times",
+          "code": "contract Bank {\n\n    address public owner;\n\n    constructor() {\n        owner = msg.sender;\n    }\n\n    function withdraw() public {\n        require(msg.sender == owner, 'Not Owner');\n        // withdraw logic\n    }\n\n    function changeOwner(address newOwner) public {\n        require(msg.sender == owner, 'Not Owner');\n        owner = newOwner;\n    }\n\n    function emergencyStop() public {\n        require(msg.sender == owner, 'Not Owner');\n        // stop logic\n    }\n\n    // imagine 47 more functions...\n    // each needs require(msg.sender == owner)\n}"
+        }
+      ],
+      "keyPoints": [
+        "require(msg.sender == owner, 'Not Owner') appears 3 times here — in a real contract it appears 10, 20, even 50 times",
+        "Code Duplication: writing identical code in multiple places — one of the most serious problems in software engineering",
+        "Problem 1 — Maintenance: if you need to change the error message from 'Not Owner' to 'Access Denied', you must change it in every function",
+        "Problem 2 — Bugs: copy-paste errors; you might forget to add require() to one function, leaving a security hole",
+        "Problem 3 — Readability: 50 functions, each starting with require() — the code becomes long and hard to read",
+        "Problem 4 — Unprofessional: senior auditors and developers immediately notice code duplication as a red flag",
+        "Solution: write the check ONCE in a modifier — then attach that modifier to every function that needs it"
+      ],
+      "practicalSteps": [
+        "Count how many times require(msg.sender == owner) appears in this contract",
+        "Imagine this pattern across 20 functions — how many lines of repeated code?",
+        "Ask: what if we need to add a second condition to the owner check? How many places to update?"
+      ]
+    },
+
+    {
+      "id": 6,
+      "type": "duplication_visual",
+      "title": "Code Duplication vs Modifiers — Side by Side",
+      "subtitle": "Part 1 — The Problem Visualised",
+      "badTitle": "WITHOUT Modifiers — Duplicated",
+      "badItems": [
+        "withdraw()    → require()",
+        "changeOwner() → require()",
+        "pause()       → require()",
+        "mint()        → require()",
+        "burn()        → require()"
+      ],
+      "badNote": "Same code written 5 times. Change one thing → update 5 places. Miss one → security hole.",
+      "goodTitle": "WITH Modifier — Written Once",
+      "goodItems": [
+        "modifier onlyOwner { require(...); _; }",
+        "withdraw()    → onlyOwner",
+        "changeOwner() → onlyOwner",
+        "pause()       → onlyOwner",
+        "mint()        → onlyOwner",
+        "burn()        → onlyOwner"
+      ],
+      "goodNote": "Logic written ONCE. Applied everywhere. Change one place → all functions updated automatically."
+    },
+
+    {
+      "id": 7,
+      "type": "definition",
+      "title": "What is a Modifier?",
+      "definition": "A modifier is a reusable piece of code that executes BEFORE (or after) a function body. It is attached to functions like a keyword. When the function is called, the modifier runs first — checks a condition — and only if the check passes, the actual function body executes.",
+      "keyPoints": [
+        "Think of a modifier as a 'gate' or 'bouncer' placed in front of a function — it decides whether the function is allowed to run",
+        "Modifiers are defined once at the contract level (like functions) and then applied to as many functions as needed",
+        "The special placeholder _; (underscore semicolon) marks where the actual function body will execute",
+        "Without _; in a modifier — the function body NEVER runs; the underscore is mandatory",
+        "Modifiers can take parameters: modifier minAmount(uint _min) { require(msg.value >= _min); _; }",
+        "Multiple modifiers on one function: function action() public onlyOwner notPaused { } — both run in left-to-right order",
+        "Modifiers can also run code AFTER the function: place code after _; for post-execution checks"
+      ]
+    },
+
+    {
+      "id": 8,
+      "type": "flow_diagram",
+      "title": "How a Modifier Works — Execution Flow",
+      "subtitle": "Part 2 — Modifier Syntax",
+      "leftTitle": "EXECUTION ORDER",
+      "leftColor": "0A2A45",
+      "leftAccent": "00C2FF",
+      "leftItems": [
+        "User calls function",
+        "Modifier runs first",
+        "require() checks condition",
+        "_; — function body runs",
+        "Return value to caller"
+      ],
+      "leftDesc": "The modifier wraps the function — pre-condition check → function → optional post check",
+      "rightTitle": "ALLOWED vs BLOCKED",
+      "rightColor": "0A2A45",
+      "rightAccent": "00FFAA",
+      "rightItems": [
+        "Condition TRUE → _; → function executes",
+        "Condition FALSE → REVERT → function blocked",
+        "No state changes saved on revert",
+        "Error message returned to caller",
+        "Gas used up to revert is consumed"
+      ],
+      "rightDesc": "The modifier is the security checkpoint before any privileged function can execute",
+      "arrow": "→",
+      "outcome": "_; placeholder",
+      "outcomeDesc": "The underscore _; is where the actual function body is injected — without it the function never runs"
+    },
+
+    {
+      "id": 9,
+      "type": "code_slide",
+      "title": "Modifier Syntax — Every Word Explained",
+      "subtitle": "Part 2 — Write your first modifier from scratch",
+      "codeBlocks": [
+        {
+          "label": "Modifier Anatomy — Fully Labelled",
+          "code": "// Step 1: basic modifier structure\nmodifier onlyOwner() {\n    _;\n}\n\n// Step 2: add the actual check\nmodifier onlyOwner() {\n    require(msg.sender == owner, 'Not Owner');\n    _;\n}\n\n// Step 3: apply to a function\nfunction withdraw() public onlyOwner {\n    // this body runs ONLY if onlyOwner passes\n}"
+        }
+      ],
+      "keyPoints": [
+        "modifier — keyword telling Solidity 'I am defining a reusable check, not a function'",
+        "onlyOwner — the modifier's NAME; written exactly like this on every function that needs owner-only access",
+        "() — parentheses; modifiers can accept parameters like functions; empty () for no parameters",
+        "require(msg.sender == owner, 'Not Owner') — the actual check; runs BEFORE the function body",
+        "_; — THE MOST IMPORTANT PART: this is where the function body executes; without _; the function never runs",
+        "public onlyOwner on withdraw() — visibility first, then modifier; both are listed in the function signature",
+        "Code flow: withdraw() called → onlyOwner modifier runs → require check → if passes: _; runs withdraw body → done"
+      ],
+      "practicalSteps": [
+        "Write modifier onlyOwner with just _; — observe the function runs for EVERYONE",
+        "Add require(msg.sender == owner) before _; — now only owner can run the function",
+        "Remove _; — deploy and call the function — notice it does NOTHING (body never executes)",
+        "This proves _; is what connects the modifier to the function body"
+      ]
+    },
+
+    {
+      "id": 10,
+      "type": "code_slide",
+      "title": "Practical 1 — OwnerExample Contract",
+      "subtitle": "First complete contract using onlyOwner modifier — deploy and test in Remix",
+      "codeBlocks": [
+        {
+          "label": "OwnerExample.sol",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract OwnerExample {\n\n    address public owner;\n\n    constructor() {\n        owner = msg.sender; // deployer = owner\n    }\n\n    modifier onlyOwner() {\n        require(msg.sender == owner, 'Not Owner');\n        _;\n    }\n\n    // anyone can call this\n    function getOwner()\n        public view returns(address)\n    {\n        return owner;\n    }\n\n    // ONLY owner can call this\n    function secretMessage()\n        public\n        onlyOwner\n        pure\n        returns(string memory)\n    {\n        return 'Only Owner Can Read This';\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "address public owner — state variable storing the owner's wallet address; public = readable by anyone",
+        "constructor() { owner = msg.sender; } — runs once at deployment; msg.sender at that moment = deployer wallet",
+        "modifier onlyOwner() — defined once between the constructor and functions; reusable on any function",
+        "getOwner() — no modifier; anyone can call this; it is a public view function returning the owner address",
+        "secretMessage() public onlyOwner pure — notice the modifier is placed between public and pure; the modifier is the security layer",
+        "Students MUST test: call secretMessage() as owner → succeeds. Switch account → call again → REVERTS: 'Not Owner'",
+        "The error message 'Not Owner' is returned in the Remix console — show students how to read it"
+      ],
+      "practicalSteps": [
+        "Deploy with Wallet A (Account 1 in Remix)",
+        "Call getOwner() → returns Wallet A's address",
+        "Call secretMessage() as Wallet A → 'Only Owner Can Read This'",
+        "Switch to Account 2 in Remix → call secretMessage() → REVERT: 'Not Owner'",
+        "Students see that ONE modifier protects the function — no require() written inside the function"
+      ]
+    },
+
+    {
+      "id": 11,
+      "type": "code_slide",
+      "title": "Practical 2 — Counter with onlyOwner",
+      "subtitle": "Only the contract owner can increment — demonstrates real access control",
+      "codeBlocks": [
+        {
+          "label": "Counter.sol — Access Controlled",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract Counter {\n\n    uint public count;\n    address public owner;\n\n    constructor() {\n        owner = msg.sender;\n    }\n\n    modifier onlyOwner() {\n        require(msg.sender == owner, 'Not Owner');\n        _;\n    }\n\n    // only owner can increment\n    function increment() public onlyOwner {\n        count++;\n    }\n\n    // only owner can reset\n    function reset() public onlyOwner {\n        count = 0;\n    }\n\n    // anyone can read the count\n    function getCount()\n        public view returns(uint)\n    {\n        return count;\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "onlyOwner modifier defined ONCE — applied to both increment() and reset() — zero code duplication",
+        "If we had 10 admin functions, the modifier is still defined once — that is the entire point",
+        "count++ and count = 0 are state changes — they cost gas and create transactions — only owner pays and decides",
+        "getCount() has no modifier — anyone can READ the count for free; reading is always open",
+        "What happens with Account 2: increment() → REVERT 'Not Owner' | getCount() → works fine (no modifier)",
+        "This pattern is the EXACT same pattern used in Compound Finance, Aave, and Uniswap admin functions",
+        "Modifier reuse benefit: to change the access rule for ALL admin functions — edit ONE modifier, not every function"
+      ],
+      "practicalSteps": [
+        "Deploy with Account 1 (owner)",
+        "Call increment() as Account 1 → count = 1 → transaction succeeds",
+        "Call increment() as Account 2 → REVERT: 'Not Owner' → count stays at 1",
+        "Call getCount() as Account 2 → works, returns 1 (public view, no modifier)",
+        "Call reset() as Account 1 → count = 0",
+        "Point out: two functions protected by one modifier definition — professional pattern"
+      ]
+    },
+
+    {
+      "id": 12,
+      "type": "two_column",
+      "title": "Part 3 — Error Handling: Three Tools in Solidity",
+      "leftTitle": "require() — User Input Validation",
+      "leftItems": [
+        "Purpose: validate external conditions — user input, balances, permissions, state",
+        "Syntax: require(condition, 'error message');",
+        "If condition is FALSE → REVERT with message → gas up to this point consumed",
+        "If condition is TRUE → execution continues normally",
+        "Most common error tool — used in almost every function",
+        "Examples: require(amount > 0), require(msg.sender == owner), require(balance >= amount)",
+        "Gas refund: unused gas is refunded to the caller after a require() revert"
+      ],
+      "rightTitle": "When to Use Each Tool",
+      "rightItems": [
+        "require() → use for: checking user-provided values, access control, balance checks, state preconditions — anything that depends on external input",
+        "revert() → use for: complex conditions that need if-else logic; when require() syntax is too rigid; custom error types in Solidity 0.8.4+",
+        "assert() → use for: internal invariants that should mathematically NEVER be false; detecting bugs in your own logic; NOT for user input",
+        "Rule of thumb: if a user could possibly cause the condition to be false → use require(). If only a bug in YOUR code could cause it → use assert()",
+        "Gas behaviour: require() and revert() refund unused gas; assert() in older Solidity consumed ALL gas (Panic in 0.8.x is more lenient)",
+        "Frequency: require() = very common | revert() = less common | assert() = rare; most contracts have zero assert() calls"
+      ]
+    },
+
+    {
+      "id": 13,
+      "type": "code_slide",
+      "title": "revert() — Manual Revert with Custom Logic",
+      "subtitle": "Part 3 — Use revert() when require() is too rigid for complex conditions",
+      "codeBlocks": [
+        {
+          "label": "revert() vs require() — Same Result, Different Style",
+          "code": "// require() style — shorter, cleaner\nfunction withdrawA() public view {\n    require(msg.sender == owner, 'Not Owner');\n    // continue...\n}\n\n// revert() style — more flexible for complex conditions\nfunction withdrawB() public view {\n    if (msg.sender != owner) {\n        revert('Not Owner');\n    }\n    // continue...\n}\n\n// revert() with multiple conditions\nfunction complexCheck(\n    uint amount\n) public view {\n    if (msg.sender != owner) {\n        revert('Not Owner');\n    }\n    if (amount == 0) {\n        revert('Zero amount');\n    }\n    if (amount > 1000) {\n        revert('Amount too high');\n    }\n}"
+        }
+      ],
+      "keyPoints": [
+        "revert('message') — immediately stops execution and reverts all state changes; identical end result to require(false, 'message')",
+        "When to prefer revert(): when you have multiple conditions checked in sequence with different logic paths",
+        "revert() inside an if block — more readable for complex multi-branch logic than chaining require() statements",
+        "Custom errors (Solidity 0.8.4+): error NotOwner(address caller); then revert NotOwner(msg.sender); — saves ~50% gas vs string message",
+        "Both require() and revert() refund all unused gas after the revert point",
+        "The Remix console shows the exact revert reason string — students should learn to read it to debug their contracts",
+        "In practice: use require() for simple single-condition checks; use revert() when you need if-else branching"
+      ],
+      "practicalSteps": [
+        "Deploy contract with both withdrawA and withdrawB",
+        "Call both as owner → both succeed identically",
+        "Call both as non-owner → both REVERT with 'Not Owner'",
+        "Observe: the result is identical — only the coding style differs",
+        "Try complexCheck(0) → REVERT: 'Zero amount' | complexCheck(2000) → REVERT: 'Amount too high'"
+      ]
+    },
+
+    {
+      "id": 14,
+      "type": "code_slide",
+      "title": "assert() — Internal Bug Detection",
+      "subtitle": "Part 3 — assert() is for YOUR code logic, never for user input validation",
+      "codeBlocks": [
+        {
+          "label": "All Three Error Tools — Complete Demo",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract ErrorExample {\n\n    address public owner;\n\n    constructor() { owner = msg.sender; }\n\n    // require: checks user-provided input\n    function testRequire(uint amount)\n        public pure\n    {\n        require(amount > 0, 'Amount must be > 0');\n        // continues only if amount > 0\n    }\n\n    // revert: checks condition with if-else logic\n    function testRevert() public view {\n        if (msg.sender != owner) {\n            revert('Not Owner — use revert style');\n        }\n        // continues only if caller is owner\n    }\n\n    // assert: verifies internal code invariant\n    function testAssert() public pure {\n        uint a = 5;\n        uint b = 3;\n        uint result = a + b;\n        // This MUST be 8 — if not, our code has a bug\n        assert(result == 8);\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "testRequire(0) → REVERT: 'Amount must be > 0' — correct use: checking external input from the user",
+        "testRequire(10) → passes — amount > 0 is satisfied, execution continues",
+        "testRevert() as non-owner → REVERT: 'Not Owner — use revert style' — same as require but if-else style",
+        "testAssert() → passes (5 + 3 == 8 is always true) — assert verifies OUR own math is correct",
+        "assert() would only fail if there is a BUG in the contract code itself — not because a user did something wrong",
+        "Solidity 0.8.x: failed assert() throws a Panic(uint256) error — different from require/revert Error(string)",
+        "Never use assert() to check user input or msg.sender — those are user-facing conditions, use require()"
+      ],
+      "practicalSteps": [
+        "Deploy ErrorExample",
+        "testRequire(0) → REVERT: 'Amount must be > 0'",
+        "testRequire(5) → succeeds (no return value, just passes)",
+        "testRevert() as owner → passes | as non-owner → REVERT",
+        "testAssert() → always passes (5+3=8 always) — change 8 to 9 in code → redeploy → PANIC"
+      ]
+    },
+
+    {
+      "id": 15,
+      "type": "three_column",
+      "title": "require() vs revert() vs assert() — Quick Reference",
+      "subtitle": "Part 3 — Summary Table",
+      "columns": [
+        {
+          "title": "require()",
+          "color": "00C2FF",
+          "icon": "✅",
+          "rows": [
+            "Use for: user input validation",
+            "Use for: access control checks",
+            "Use for: balance & state checks",
+            "Frequency: very common",
+            "Gas: unused gas refunded",
+            "Error type: Error(string)",
+            "Example:",
+            "require(amount > 0, 'Zero')"
+          ]
+        },
+        {
+          "title": "revert()",
+          "color": "FFB347",
+          "icon": "⚠️",
+          "rows": [
+            "Use for: complex conditions",
+            "Use for: if-else logic branches",
+            "Use for: custom error types",
+            "Frequency: less common",
+            "Gas: unused gas refunded",
+            "Error type: Error(string)",
+            "Example:",
+            "if(!ok){ revert('Fail'); }"
+          ]
+        },
+        {
+          "title": "assert()",
+          "color": "FF4444",
+          "icon": "🐛",
+          "rows": [
+            "Use for: internal invariants",
+            "Use for: detecting your own bugs",
+            "NEVER for user input",
+            "Frequency: rare",
+            "Gas: Panic error in 0.8.x",
+            "Error type: Panic(uint256)",
+            "Example:",
+            "assert(total == a + b)"
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": 16,
+      "type": "code_slide",
+      "title": "Putting It All Together — Professional Bank Contract",
+      "subtitle": "Final practical: onlyOwner modifier + all three error tools in one real contract",
+      "codeBlocks": [
+        {
+          "label": "ProfessionalBank.sol",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract ProfessionalBank {\n\n    address public owner;\n    mapping(address => uint) public balances;\n    bool public paused;\n\n    constructor() { owner = msg.sender; }\n\n    // single modifier — reused on all admin functions\n    modifier onlyOwner() {\n        require(msg.sender == owner, 'Not Owner');\n        _;\n    }\n\n    modifier notPaused() {\n        require(!paused, 'Contract is paused');\n        _;\n    }\n\n    // anyone can deposit — but only when not paused\n    function deposit() public payable notPaused {\n        require(msg.value > 0, 'Send some ETH');\n        balances[msg.sender] += msg.value;\n    }\n\n    // owner only: pause the contract\n    function pause() public onlyOwner {\n        paused = true;\n    }\n\n    // owner only: unpause\n    function unpause() public onlyOwner {\n        paused = false;\n    }\n\n    // owner only: check total ETH held\n    function getVaultBalance()\n        public view onlyOwner\n        returns(uint)\n    {\n        return address(this).balance;\n    }\n\n}"
+        }
+      ],
+      "keyPoints": [
+        "TWO modifiers: onlyOwner (access control) and notPaused (state check) — both defined once, reused everywhere",
+        "deposit() public payable notPaused — open to everyone but blocked when paused; require(msg.value > 0) = input validation",
+        "pause() public onlyOwner — only owner can pause; no logic inside the function itself — the modifier does all checking",
+        "unpause() public onlyOwner — same modifier, different function — one modifier definition protects both",
+        "getVaultBalance() public view onlyOwner — a view function CAN have a modifier; modifier runs before the return",
+        "Multiple modifiers order: function action() public onlyOwner notPaused — onlyOwner runs first, then notPaused, then body",
+        "This pattern is identical to OpenZeppelin's Pausable.sol + Ownable.sol — the industry standard access control library"
+      ],
+      "practicalSteps": [
+        "Deploy — owner = Account 1",
+        "Deposit 1 ETH as Account 2 → succeeds",
+        "Owner calls pause() → paused = true",
+        "Try deposit() again → REVERT: 'Contract is paused'",
+        "Owner calls unpause() → deposit works again",
+        "Account 2 tries getVaultBalance() → REVERT: 'Not Owner'",
+        "Owner calls getVaultBalance() → shows total ETH"
+      ]
+    },
+
+    {
+      "id": 17,
+      "type": "two_column",
+      "title": "Real-World Usage — Modifiers in Production Contracts",
+      "leftTitle": "Where You See This in the Wild",
+      "leftItems": [
+        "OpenZeppelin Ownable.sol — the standard: modifier onlyOwner() { require(owner() == _msgSender(), 'Ownable: caller is not the owner'); _; } — used in every serious project",
+        "ERC-20 tokens: function mint(address to, uint amount) public onlyOwner — new tokens can only be created by the contract deployer",
+        "NFT contracts: function setBaseURI(string memory uri) external onlyOwner — metadata URL controlled by owner only",
+        "Uniswap V2: modifier ensure(uint deadline) { require(deadline >= block.timestamp, 'EXPIRED'); _; } — a modifier with a PARAMETER checking transaction deadline",
+        "Aave protocol: modifier onlyPoolAdmin() — checks caller is in the admin role mapping; same concept, more complex implementation",
+        "Chainlink oracles: modifier onlyOwner and modifier validChainlinkRequest — multiple modifiers stacked on one function"
+      ],
+      "rightTitle": "Homework — Build These Contracts",
+      "rightItems": [
+        "Task 1: Voting Contract — add modifier onlyAdmin() that restricts addCandidate() to admin only; anyone can call vote(candidateId); use mapping(address => bool) hasVoted with require(!hasVoted[msg.sender]) in the vote function",
+        "Task 2: Token Contract — state variables: string name, string symbol, uint totalSupply, mapping(address=>uint) balances; modifier onlyOwner on mint(); function transfer(address to, uint amount) uses require(balances[msg.sender] >= amount)",
+        "Task 3: Timed Auction — modifier onlyWhileOpen() that checks block.timestamp < auctionEndTime; bid() is payable with onlyWhileOpen; require(msg.value > highestBid); owner can call endAuction() to close",
+        "Challenge: Add a second modifier validAddress(address _addr) that does require(_addr != address(0), 'Zero address') — apply it to any function that takes an address parameter",
+        "Explore: Read OpenZeppelin Ownable.sol on GitHub — find onlyOwner modifier definition and compare with what we wrote today"
+      ]
+    },
+
+    {
+      "id": 18,
+      "type": "summary",
+      "title": "Lecture #5 Summary — Key Takeaways",
+      "points": [
+        "Code duplication — writing require() in 20 functions — is a serious bug risk, maintenance nightmare, and mark of unprofessional code",
+        "A modifier is a reusable code block that runs BEFORE a function; defined once with modifier onlyOwner() { require(...); _; }",
+        "The _; (underscore semicolon) is mandatory — it marks where the actual function body executes; without it the function never runs",
+        "owner = msg.sender in the constructor captures the deployer address; the onlyOwner modifier then restricts privileged functions to only that address",
+        "require(condition, 'message') — the primary guard for user-facing checks: input validation, access control, balance checks — most common error tool",
+        "revert('message') — identical result to require(false) but more flexible for complex if-else branches and custom error types",
+        "assert(condition) — for internal code invariants only; proves YOUR OWN logic is correct; never use for user input; Panic error on failure",
+        "Multiple modifiers stack on one function: function action() public onlyOwner notPaused — each runs in order before the function body"
+      ],
+      "closing": "One modifier written once protects dozens of functions. This is how professional, secure, auditable Solidity is written."
+    }
+
+  ]
+}
