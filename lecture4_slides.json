@@ -26,16 +26,16 @@
       "type": "agenda",
       "title": "Lecture #4 — Outline (2 Hours)",
       "items": [
-        { "num": "01", "label": "Revision of Lecture 3 (10 min)" },
-        { "num": "02", "label": "Function Anatomy — Every Part Explained (20 min)" },
-        { "num": "03", "label": "view vs pure — Reading the Chain (20 min)" },
-        { "num": "04", "label": "State Changing Functions + Gas (25 min)" },
-        { "num": "05", "label": "msg.sender — Who Is Calling? (20 min)" },
-        { "num": "06", "label": "payable Functions — Receiving ETH (20 min)" },
-        { "num": "07", "label": "msg.value — How Much ETH Was Sent? (15 min)" },
-        { "num": "08", "label": "require() — Protecting the Contract (20 min)" },
-        { "num": "09", "label": "Practical: Simple Bank Contract (20 min)" },
-        { "num": "10", "label": "Summary + Homework (10 min)" }
+        { "num": "01", "label": "Revision of Lecture 3" },
+        { "num": "02", "label": "Function Anatomy — Every Part Explained" },
+        { "num": "03", "label": "view vs pure — Reading the Chain" },
+        { "num": "04", "label": "State Changing Functions + Gas" },
+        { "num": "05", "label": "msg.sender — Who Is Calling?" },
+        { "num": "06", "label": "payable Functions — Receiving ETH" },
+        { "num": "07", "label": "msg.value — How Much ETH Was Sent?" },
+        { "num": "08", "label": "require() — Protecting the Contract" },
+        { "num": "09", "label": "Practical: Simple Bank Contract" },
+        { "num": "10", "label": "Summary + Homework" }
       ]
     },
 
