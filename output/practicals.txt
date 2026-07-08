@@ -1,153 +1,102 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract FunctionTypesDemo {
-    uint private privateVar;
-    uint internal internalVar;
-    uint public publicVar;
+contract ModifierContract {
+    uint public value;
 
-    function publicFunction() public {
-        privateVar = 1;
-        internalVar = 2;
-        publicVar = 3;
+    modifier onlyPositive(uint _val) {
+        if (_val <= 0) revert("Must be positive");
+        _;
     }
 
-    function privateFunction() private {
-        privateVar = 10;
-    }
-
-    function internalFunction() internal {
-        internalVar = 20;
-    }
-
-    function externalFunction() external {
-        publicVar = 30;
-    }
-
-    function callInternal() public {
-        internalFunction();
-    }
-
-    function callPrivate() public {
-        privateFunction();
+    function setValue(uint _val) public onlyPositive(_val) {
+        value = _val;
     }
 }
 
-contract FunctionParametersDemo {
-    function setValues(uint _num, address _addr, bool _flag) public {
-        uint localNum = _num;
-        address localAddr = _addr;
-        bool localFlag = _flag;
+contract AccessControlContract {
+    address public owner;
+
+    constructor() {
+        owner = msg.sender;
     }
 
-    function setArray(uint[] memory _arr) public {
-        uint first = _arr[0];
-    }
-}
-
-contract ReturnValuesDemo {
-    function getData() public pure returns (uint, string memory, bool) {
-        return (42, "Hello", true);
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
     }
 
-    function getNamed() public pure returns (uint count, string memory message) {
-        count = 100;
-        message = "Named return";
+    function changeOwner(address _newOwner) public onlyOwner {
+        owner = _newOwner;
     }
 }
 
-contract StateChangingFunctionsDemo {
-    uint public counter;
-
-    function increment() public {
-        counter++;
-    }
-
-    function decrement() public {
-        counter--;
-    }
-}
-
-contract ViewVsPureDemo {
-    uint public storedNumber = 10;
-
-    function getStored() public view returns (uint) {
-        return storedNumber;
-    }
-
-    function addPure(uint a, uint b) public pure returns (uint) {
-        return a + b;
-    }
-}
-
-contract PayableFunctionsDemo {
-    uint public totalReceived;
-
-    function deposit() public payable {
-        totalReceived += msg.value;
-    }
+contract RequireContract {
+    uint public balance = 100;
 
     function withdraw(uint _amount) public {
-        payable(msg.sender).transfer(_amount);
-    }
-}
-
-contract MsgSenderDemo {
-    address public lastCaller;
-
-    function recordCaller() public {
-        lastCaller = msg.sender;
-    }
-
-    function getCaller() public view returns (address) {
-        return msg.sender;
-    }
-}
-
-contract MsgValueDemo {
-    uint public totalEther;
-
-    function receiveEther() public payable {
-        totalEther += msg.value;
-    }
-
-    function getValue() public view returns (uint) {
-        return msg.value;
-    }
-}
-
-contract RequireDemo {
-    uint public balance;
-
-    function withdraw(uint _amount) public {
-        require(_amount > 0, "Amount must be positive");
         require(_amount <= balance, "Insufficient balance");
         balance -= _amount;
     }
-
-    function setBalance(uint _newBalance) public {
-        require(_newBalance >= 0, "Balance cannot be negative");
-        balance = _newBalance;
-    }
 }
 
-contract RevertDemo {
-    uint public balance;
+contract RevertContract {
+    uint public balance = 100;
 
     function withdraw(uint _amount) public {
-        if (_amount <= 0) {
-            revert("Amount must be positive");
-        }
         if (_amount > balance) {
             revert("Insufficient balance");
         }
         balance -= _amount;
     }
+}
 
-    function setBalance(uint _newBalance) public {
-        if (_newBalance < 0) {
-            revert("Balance cannot be negative");
-        }
-        balance = _newBalance;
+contract AssertContract {
+    uint public totalSupply = 100;
+
+    function burn(uint _amount) public {
+        require(totalSupply >= _amount, "Not enough");
+        totalSupply -= _amount;
+        assert(totalSupply >= 0);
+    }
+
+    function divide(uint a, uint b) public pure returns (uint) {
+        require(b != 0, "Zero division");
+        uint result = a / b;
+        assert(result * b <= a);
+        return result;
+    }
+}
+
+contract BaseReusable {
+    uint public baseValue;
+
+    modifier onlyValid(uint _val) {
+        require(_val > 0, "Invalid");
+        _;
+    }
+
+    function setBase(uint _val) public onlyValid(_val) {
+        baseValue = _val;
+    }
+}
+
+contract CodeReuseContract is BaseReusable {
+    function setValue(uint _val) public onlyValid(_val) {
+        baseValue = _val * 2;
+    }
+}
+
+contract BestPracticesContract {
+    mapping(address => uint) public balances;
+
+    function deposit() public payable {
+        balances[msg.sender] += msg.value;
+    }
+
+    function withdraw(uint _amount) public {
+        require(_amount <= balances[msg.sender], "Insufficient balance");
+        balances[msg.sender] -= _amount;
+        payable(msg.sender).transfer(_amount);
     }
 }
