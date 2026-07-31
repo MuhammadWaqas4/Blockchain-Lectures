@@ -1,0 +1,274 @@
+Basic Inheritance — Animal and Dog
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Animal {
+
+    function eat() public pure returns (string memory) {
+        return "Animal is eating";
+    }
+
+    function sleep() public pure returns (string memory) {
+        return "Animal is sleeping";
+    }
+}
+
+contract Dog is Animal {
+
+}
+Inheritance + Child Function
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Animal {
+
+    function eat() public pure returns (string memory) {
+        return "Animal is eating";
+    }
+
+    function sleep() public pure returns (string memory) {
+        return "Animal is sleeping";
+    }
+}
+
+contract Dog is Animal {
+
+    function bark() public pure returns (string memory) {
+        return "Woof";
+    }
+}
+
+Constructor Inheritance
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Animal {
+
+    string public name;
+
+    constructor(string memory _name) {
+        name = _name;
+    }
+}
+
+contract Dog is Animal {
+
+    constructor()
+        Animal("German Shepherd")
+    {
+
+    }
+}
+
+
+Constructor Inheritance with User Input
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Animal {
+
+    string public name;
+
+    constructor(string memory _name) {
+        name = _name;
+    }
+}
+
+contract Dog is Animal {
+
+    constructor(string memory _dogName)
+        Animal(_dogName)
+    {
+
+    }
+}
+
+Function Overloading
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Calculator {
+
+    function add(uint a, uint b)
+        public
+        pure
+        returns (uint)
+    {
+        return a + b;
+    }
+
+    function add(uint a, uint b, uint c)
+        public
+        pure
+        returns (uint)
+    {
+        return a + b + c;
+    }
+}
+Function Overloading — Deposit Example
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract DepositExample {
+
+    uint public balance;
+
+    function deposit() public {
+        balance += 1;
+    }
+
+    function deposit(uint amount) public {
+        balance += amount;
+    }
+}
+Function Overriding — Animal and Dog
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Animal {
+
+    function sound()
+        public
+        pure
+        virtual
+        returns (string memory)
+    {
+        return "Animal makes a sound";
+    }
+}
+
+contract Dog is Animal {
+
+    function sound()
+        public
+        pure
+        override
+        returns (string memory)
+    {
+        return "Dog says Woof";
+    }
+}
+Function Overriding — Multiple Animals
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Animal {
+
+    function sound()
+        public
+        pure
+        virtual
+        returns (string memory)
+    {
+        return "Animal makes a sound";
+    }
+}
+
+contract Dog is Animal {
+
+    function sound()
+        public
+        pure
+        override
+        returns (string memory)
+    {
+        return "Woof";
+    }
+}
+
+contract Cat is Animal {
+
+    function sound()
+        public
+        pure
+        override
+        returns (string memory)
+    {
+        return "Meow";
+    }
+}
+
+contract Cow is Animal {
+
+    function sound()
+        public
+        pure
+        override
+        returns (string memory)
+    {
+        return "Moo";
+    }
+}
+virtual and override
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Parent {
+
+    function message()
+        public
+        pure
+        virtual
+        returns (string memory)
+    {
+        return "Message from Parent";
+    }
+}
+
+contract Child is Parent {
+
+    function message()
+        public
+        pure
+        override
+        returns (string memory)
+    {
+        return "Message from Child";
+    }
+}
+Enum — Basic Example
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Order {
+
+    enum Status {
+        Pending,
+        Processing,
+        Completed,
+        Cancelled
+    }
+
+    Status public orderStatus;
+}
+Enum — Order Management
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Order {
+
+    enum Status {
+        Pending,
+        Processing,
+        Completed,
+        Cancelled
+    }
+
+    Status public orderStatus;
+
+    function startProcessing() public {
+        orderStatus = Status.Processing;
+    }
+
+    function completeOrder() public {
+        orderStatus = Status.Completed;
+    }
+
+    function cancelOrder() public {
+        orderStatus = Status.Cancelled;
+    }
+}
