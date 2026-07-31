@@ -1,0 +1,184 @@
+{
+  "meta": {
+    "deckTitle": "Solidity Lecture 6",
+    "kicker": "Smart Contract Engineering",
+    "title": "Inheritance, Enums,\nAbstract Contracts & Interfaces",
+    "subtitle": "How professional Solidity projects organize and reuse code",
+    "duration": "1.5 Hours",
+    "palette": {
+      "primary": "12172B",
+      "secondary": "1F2A44",
+      "accent": "00D9C0",
+      "accent2": "FFB100",
+      "light": "F4F6FB",
+      "textDark": "12172B",
+      "textMuted": "5B6478"
+    }
+  },
+  "slides": [
+    {
+      "type": "title",
+      "kicker": "Smart Contract Engineering",
+      "title": "Inheritance, Enums,\nAbstract Contracts & Interfaces",
+      "subtitle": "How professional Solidity projects organize and reuse code",
+      "footer": "Lecture 6 + 7   \u2022   Duration: 1.5 Hours"
+    },
+    {
+      "type": "agenda",
+      "title": "What We're Covering Today",
+      "intro": "Until now we've written individual contracts \u2014 variables, arrays, mappings, structs, modifiers, constructors, events. Today we learn how real projects like OpenZeppelin and ERC20 organize code across multiple contracts.",
+      "columns": [
+        {
+          "heading": "Lecture 7 \u2014 Inheritance",
+          "items": ["Parent & Child Contracts", "The is Keyword", "Constructor Inheritance", "Function Overloading", "Function Overriding (virtual / override)"]
+        },
+        {
+          "heading": "Lecture 8 \u2014 Composition",
+          "items": ["Enums", "Abstract Contracts", "Interfaces", "Calling Contracts via Interface", "Real-World Examples"]
+        }
+      ]
+    },
+    {
+      "type": "diagram_tree",
+      "title": "Topic 1 \u2014 What Is Inheritance?",
+      "intro": "An Animal has common features like eating and sleeping. A Dog is an Animal, so it automatically has those features. A German Shepherd is also a Dog, so it inherits everything Dog has too.",
+      "nodes": ["Animal", "Dog", "German Shepherd"],
+      "note": "Child contracts automatically receive everything their parent defines \u2014 no copy-pasting required."
+    },
+    {
+      "type": "code",
+      "title": "Example 1 \u2014 A Parent Contract",
+      "intro": "Animal defines one function. Deploy it and call eat() \u2014 it returns the string below.",
+      "code": "contract Animal {\n\n    function eat() public pure returns (string memory) {\n        return \"Animal is eating\";\n    }\n\n}",
+      "note": "Now declare Dog is Animal with an empty body \u2014 deploy it, and Dog already has eat(). We didn't write the function again; Dog inherited it automatically.",
+      "output": "eat() \u2192 \"Animal is eating\""
+    },
+    {
+      "type": "diagram_tree",
+      "title": "Example 2 \u2014 Adding a Second Parent Function",
+      "intro": "Add sleep() to Animal and redeploy. Dog now exposes both inherited functions without any extra code in Dog itself.",
+      "nodes": ["Animal", "Dog"],
+      "labels": {"Animal": ["eat()", "sleep()"], "Dog": ["eat()", "sleep()", "(inherited)"]},
+      "note": "sleep() returns \"Animal is sleeping\" \u2014 and Dog has it for free."
+    },
+    {
+      "type": "concept_split",
+      "title": "Topic 2 \u2014 Parent Functions + Child Functions",
+      "leftHeading": "Animal (Parent)",
+      "leftBullets": ["eat()", "sleep()"],
+      "rightHeading": "Dog (Child)",
+      "rightBullets": ["eat()  \u2014 inherited", "sleep() \u2014 inherited", "bark() \u2014 new, defined in Dog"],
+      "diagramNote": "A child contract keeps every parent function AND can add its own. Both exist side by side."
+    },
+    {
+      "type": "code",
+      "title": "Topic 3 \u2014 Constructor Inheritance",
+      "intro": "When Dog is deployed, the parent constructor runs first, then the child constructor. Dog passes a fixed value up to Animal's constructor.",
+      "code": "contract Animal {\n    string public name;\n    constructor(string memory _name) {\n        name = _name;\n    }\n}\n\ncontract Dog is Animal {\n    constructor() Animal(\"German Shepherd\") {}\n}",
+      "note": "Deploying Dog triggers Animal's constructor automatically \u2014 name is set before Dog's own constructor body runs.",
+      "flow": ["Deploy Dog", "Animal Constructor", "Dog Constructor"]
+    },
+    {
+      "type": "code",
+      "title": "Topic 4 \u2014 Function Overloading",
+      "intro": "Same function name, different parameters. The compiler picks the right version based on the arguments you pass.",
+      "code": "function add(uint a, uint b)\n    public pure returns (uint) {\n    return a + b;\n}\n\nfunction add(uint a, uint b, uint c)\n    public pure returns (uint) {\n    return a + b + c;\n}",
+      "note": "Same idea appears constantly in real contracts: deposit(), deposit(uint amount), deposit(address user, uint amount).",
+      "output": "add(2,3) \u2192 5      add(2,3,4) \u2192 9"
+    },
+    {
+      "type": "concept_split",
+      "title": "Topic 5 \u2014 Function Overriding",
+      "leftHeading": "virtual (Parent)",
+      "leftBullets": ["Marks a function as changeable", "\"This function may be replaced\"", "function sound() ... virtual"],
+      "rightHeading": "override (Child)",
+      "rightBullets": ["Marks a function as replaced", "\"I am replacing the parent's version\"", "function sound() ... override"],
+      "diagramNote": "Deploy Dog and call sound() \u2014 students see \"Bark\" returned instead of \"Animal\", proving the child version ran."
+    },
+    {
+      "type": "section",
+      "number": "08",
+      "title": "Lecture 8",
+      "subtitle": "Enums \u00b7 Abstract Contracts \u00b7 Interfaces \u00b7 Cross-Contract Calls"
+    },
+    {
+      "type": "process",
+      "title": "Topic 1 \u2014 Enums: Fixed Sets of Values",
+      "intro": "Enums are used when values are limited \u2014 like a traffic light, which is only ever Red, Yellow, or Green (never Blue, Pink, or Orange).",
+      "steps": ["Red", "Yellow", "Green"],
+      "note": "enum Status { Pending, Processing, Completed, Cancelled } \u2014 these are fixed, named values."
+    },
+    {
+      "type": "code",
+      "title": "Enum in Practice \u2014 An Order Contract",
+      "intro": "Status defaults to Pending. Each function moves the order forward one fixed step.",
+      "code": "contract Order {\n    enum Status { Pending, Processing, Completed }\n    Status public orderStatus;\n\n    function ship() public {\n        orderStatus = Status.Processing;\n    }\n\n    function deliver() public {\n        orderStatus = Status.Completed;\n    }\n}",
+      "note": "Deploy, call ship() then deliver(), and read orderStatus after each step.",
+      "flow": ["Pending", "Processing", "Completed"]
+    },
+    {
+      "type": "icon_list",
+      "title": "Where You've Already Seen Enums",
+      "intro": "This exact Pending \u2192 Processing \u2192 Completed pattern shows up everywhere in everyday apps:",
+      "items": [
+        {"icon": "package", "label": "Amazon Order", "desc": "Placed \u2192 Shipped \u2192 Delivered"},
+        {"icon": "food", "label": "FoodPanda Order", "desc": "Confirmed \u2192 Preparing \u2192 Delivered"},
+        {"icon": "car", "label": "Uber Ride", "desc": "Requested \u2192 In Progress \u2192 Completed"}
+      ]
+    },
+    {
+      "type": "diagram_tree",
+      "title": "Topic 2 \u2014 Abstract Contracts",
+      "intro": "An abstract contract is an incomplete contract \u2014 a blueprint, not a finished building. It cannot be deployed on its own.",
+      "nodes": ["Blueprint (Abstract)", "House (Implementation)"],
+      "note": "abstract contract Animal declares sound() with no body \u2014 just a signature. Only a child that implements it can be deployed."
+    },
+    {
+      "type": "code",
+      "title": "Abstract Contract \u2014 Declaration Without Body",
+      "intro": "The parent only declares the function signature. The child must supply the implementation before it can be deployed.",
+      "code": "abstract contract Animal {\n    function sound() public virtual\n        returns (string memory);\n}\n\ncontract Dog is Animal {\n    function sound() public pure override\n        returns (string memory) {\n        return \"Bark\";\n    }\n}",
+      "note": "Dog can be deployed. Animal cannot \u2014 it's missing a real implementation.",
+      "output": "Deploy Dog \u2713      Deploy Animal \u2717"
+    },
+    {
+      "type": "diagram_tree",
+      "title": "Topic 3 \u2014 Interfaces",
+      "intro": "An interface is a contract agreement \u2014 like a TV remote. Every TV understands Power, Volume, and Channel, even though the manufacturer inside changes.",
+      "nodes": ["Remote (Interface)", "Samsung / LG / Sony"],
+      "note": "The buttons (function signatures) stay the same; the implementation behind them can differ."
+    },
+    {
+      "type": "code",
+      "title": "Declaring and Implementing an Interface",
+      "intro": "An interface only lists function signatures. A contract that implements it must match those signatures exactly.",
+      "code": "interface ICalculator {\n    function add(uint, uint) external pure returns (uint);\n}\n\ncontract Calculator is ICalculator {\n    function add(uint a, uint b) external pure override\n        returns (uint) {\n        return a + b;\n    }\n}",
+      "note": "Deploy Calculator directly and it works exactly like any normal contract.",
+      "output": "add(5, 3) \u2192 8"
+    },
+    {
+      "type": "process",
+      "title": "Topic 4 \u2014 Calling Another Contract Through an Interface",
+      "intro": "Deploy Calculator, then pass its address into a second contract that calls it through the interface \u2014 contracts talking to contracts.",
+      "steps": ["Contract A", "Interface", "Contract B", "Result"],
+      "note": "function calculate(address calculator) public view returns (uint) { return ICalculator(calculator).add(5, 3); }  \u2192  returns 8"
+    },
+    {
+      "type": "icon_list",
+      "title": "Why Interfaces Matter",
+      "intro": "Almost every production protocol talks to other contracts through an interface rather than knowing their internal implementation:",
+      "items": [
+        {"icon": "token", "label": "ERC20 & ERC721", "desc": "The token standards themselves are interfaces"},
+        {"icon": "link", "label": "Chainlink", "desc": "Price feeds are consumed through interfaces"},
+        {"icon": "swap", "label": "Uniswap", "desc": "Routers and pools interact via interfaces"}
+      ]
+    },
+    {
+      "type": "closing",
+      "title": "Final Practical \u2014 Combining Everything",
+      "subtitle": "Build one small project that uses every concept from today",
+      "flow": ["Animal", "Dog", "Override", "Enum", "Event", "Deploy"],
+      "bullets": ["Inheritance: Dog is Animal", "Overriding: sound() replaced with virtual / override", "Enums: track a status on the contract", "Events: emit on state changes", "Deploy & test end to end"]
+    }
+  ]
+}
