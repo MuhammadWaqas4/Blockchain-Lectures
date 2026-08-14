@@ -1,0 +1,600 @@
+{
+  "presentation": {
+    "title": "Blockchain Technology – Lecture 7",
+    "author": "Blockchain Course",
+    "subject": "Contract Architecture, Interfaces, Libraries & Advanced Solidity Features",
+    "outputPath": "D:/work/Drive (Extra)/work/Blockchain-Lectures/Blockchain_Lecture8_9.pptx"
+  },
+  "slides": [
+
+    {
+      "id": 1,
+      "type": "title",
+      "tag": "LECTURE 7",
+      "title": "Contract Architecture & Advanced Solidity",
+      "subtitle": "Interfaces  •  Libraries  •  Custom Errors  •  ETH Reception",
+      "duration": "Duration: 3 Hours",
+      "footer": "Blockchain Course  |  Lecture 7"
+    },
+
+    {
+      "id": 2,
+      "type": "agenda",
+      "title": "Lecture Agenda",
+      "part1": {
+        "label": "Lecture 8 — Architecture",
+        "color": "1A6FBF",
+        "items": [
+          "Recap: Inheritance & Enums",
+          "Abstract Contracts & Functions",
+          "Interfaces vs Abstract Contracts",
+          "Interface Implementation",
+          "Contract Addresses",
+          "Contract-to-Contract Communication",
+          "Reading & Modifying Another Contract"
+        ]
+      },
+      "part2": {
+        "label": "Lecture 9 — Advanced Features",
+        "color": "00C6AE",
+        "items": [
+          "Libraries & using for",
+          "Internal vs External Library Functions",
+          "Custom Errors (error keyword)",
+          "Custom Errors vs require()",
+          "constant & immutable",
+          "receive() & fallback()",
+          "Final Architecture Diagram"
+        ]
+      }
+    },
+
+    {
+      "id": 3,
+      "type": "recap",
+      "title": "Part 1 — Connecting to Last Lecture",
+      "recap_points": [
+        "Inheritance — one contract extends another using is keyword",
+        "Parent & Child contracts — child inherits all parent functions",
+        "Constructor Inheritance — parent constructor runs first",
+        "Function Overloading — same name, different parameters",
+        "Function Overriding — virtual in parent, override in child",
+        "Enums — fixed set of allowed values for a variable"
+      ],
+      "progression": [
+        "Inheritance",
+        "Abstract Contracts",
+        "Interfaces",
+        "Contract-to-Contract Communication",
+        "Libraries",
+        "Custom Errors",
+        "ETH Receiving"
+      ],
+      "transition": "Today we take contract architecture one step further. In real blockchain applications, we rarely build everything inside one contract."
+    },
+
+    {
+      "id": 4,
+      "type": "architecture_intro",
+      "title": "Real-World Multi-Contract Architecture",
+      "statement": "A real application can contain dozens of contracts — all communicating with each other.",
+      "diagram": {
+        "title": "DeFi Application Example",
+        "root": "DeFi Application",
+        "children": ["Token Contract", "Treasury Contract", "Lending Contract"],
+        "grandchildren": {
+          "Token Contract": [],
+          "Treasury Contract": [],
+          "Lending Contract": ["Oracle"]
+        }
+      },
+      "point": "These contracts need to communicate with each other. Today we learn how that communication works."
+    },
+
+    {
+      "id": 5,
+      "type": "section_divider",
+      "section": "LECTURE 8 — PART 2",
+      "title": "Abstract Contracts",
+      "subtitle": "Incomplete contracts that define structure for child contracts"
+    },
+
+    {
+      "id": 6,
+      "type": "concept",
+      "title": "What is an Abstract Contract?",
+      "definition": "An abstract contract is a contract that is intentionally incomplete. It is designed to be used as a base for other contracts.",
+      "comparison": {
+        "normal_function": {
+          "label": "Normal Function",
+          "code": "function hello()\n    public pure\n    returns(string memory)\n{\n    return \"Hello\";\n}"
+        },
+        "abstract_function": {
+          "label": "Abstract Function",
+          "code": "function makeSound()\n    public\n    virtual\n    returns(string memory);"
+        }
+      },
+      "key_points": [
+        "Declared with the abstract keyword",
+        "Contains at least one function with no body",
+        "Cannot be deployed on its own",
+        "Child contracts MUST implement all abstract functions",
+        "Can also contain fully implemented functions"
+      ]
+    },
+
+    {
+      "id": 7,
+      "type": "code_slide",
+      "title": "Abstract Contract — Animal / Dog / Cat",
+      "label": "Animal.sol + Dog.sol + Cat.sol",
+      "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\nabstract contract Animal {\n\n    // Abstract — no body, child MUST implement\n    function makeSound()\n        public virtual\n        returns(string memory);\n\n    // Implemented — child inherits directly\n    function sleep()\n        public pure\n        returns(string memory)\n    {\n        return \"Animal is sleeping\";\n    }\n}\n\ncontract Dog is Animal {\n    function makeSound()\n        public pure override\n        returns(string memory)\n    {\n        return \"Woof\";\n    }\n}\n\ncontract Cat is Animal {\n    function makeSound()\n        public pure override\n        returns(string memory)\n    {\n        return \"Meow\";\n    }\n}",
+      "diagram": {
+        "parent": "Animal (abstract)",
+        "note_abstract": "makeSound() — no body",
+        "note_implemented": "sleep() — has body",
+        "children": [
+          { "name": "Dog", "result": "Woof" },
+          { "name": "Cat", "result": "Meow" }
+        ]
+      },
+      "steps": [
+        "Try deploying Animal → FAILS (abstract)",
+        "Deploy Dog → call makeSound() → 'Woof'",
+        "Deploy Dog → call sleep() → 'Animal is sleeping'",
+        "Deploy Cat → call makeSound() → 'Meow'"
+      ]
+    },
+
+    {
+      "id": 8,
+      "type": "concept",
+      "title": "Why Abstract Contracts? — Real-World Use",
+      "analogy": "Every payment system must process a payment — but each system implements it differently.",
+      "diagram": {
+        "root": "PaymentProcessor (abstract)",
+        "children": ["CryptoPayment", "BankPayment"]
+      },
+      "code_abstract": "abstract contract PaymentProcessor {\n\n    function processPayment(uint amount)\n        public virtual\n        returns(bool);\n\n}",
+      "code_child": "contract CryptoPayment is PaymentProcessor {\n\n    function processPayment(uint amount)\n        public pure override\n        returns(bool)\n    {\n        return amount > 0;\n    }\n}",
+      "insight": "Define the requirement in the parent. The child provides the actual implementation. This is abstraction."
+    },
+
+    {
+      "id": 9,
+      "type": "section_divider",
+      "section": "LECTURE 8 — PART 4",
+      "title": "Interfaces",
+      "subtitle": "The foundation of contract-to-contract communication in Solidity"
+    },
+
+    {
+      "id": 10,
+      "type": "concept",
+      "title": "What is an Interface?",
+      "definition": "An interface defines WHAT functions a contract exposes to the outside world — without any implementation. It is the standard way contracts communicate with each other.",
+      "analogy": "An interface is like an API specification. It tells you what endpoints exist and what they return — not how they work internally.",
+      "rules": [
+        "All functions must be external",
+        "No function bodies (zero implementation)",
+        "No state variables allowed",
+        "No constructors allowed",
+        "Can include events and errors",
+        "Implementing contract must define all functions"
+      ],
+      "example_code": "interface ICalculator {\n\n    function add(\n        uint a,\n        uint b\n    ) external pure returns(uint);\n\n}"
+    },
+
+    {
+      "id": 11,
+      "type": "comparison_table",
+      "title": "Abstract Contract vs Interface — Side by Side",
+      "columns": ["Feature", "Abstract Contract", "Interface"],
+      "rows": [
+        ["State variables",       "✅ Allowed",            "❌ Not allowed"],
+        ["Implemented functions", "✅ Some allowed",        "❌ Not allowed"],
+        ["Abstract functions",    "✅ Allowed",            "✅ Required"],
+        ["Constructors",          "✅ Allowed",            "❌ Not allowed"],
+        ["Modifiers",             "✅ Allowed",            "❌ Not allowed"],
+        ["Function visibility",   "Any",                   "external only"],
+        ["Events",                "✅ Allowed",            "✅ Allowed"],
+        ["Primary use",           "Partial base blueprint","Contract API / standard"]
+      ],
+      "summary": "Abstract Contract = partial implementation. Interface = pure contract standard."
+    },
+
+    {
+      "id": 12,
+      "type": "code_slide",
+      "title": "Implementing an Interface",
+      "label": "ICalculator.sol + Calculator.sol",
+      "code_interface": "interface ICalculator {\n\n    function add(\n        uint a,\n        uint b\n    ) external pure returns(uint);\n\n    function multiply(\n        uint a,\n        uint b\n    ) external pure returns(uint);\n}",
+      "code_implementation": "contract Calculator is ICalculator {\n\n    function add(\n        uint a,\n        uint b\n    ) external pure override returns(uint) {\n        return a + b;\n    }\n\n    function multiply(\n        uint a,\n        uint b\n    ) external pure override returns(uint) {\n        return a * b;\n    }\n}",
+      "flow": [
+        "ICalculator defines: add(uint,uint)",
+        "Calculator agrees to implement it",
+        "Calculator provides the actual logic",
+        "override keyword marks the implementation"
+      ]
+    },
+
+    {
+      "id": 13,
+      "type": "section_divider",
+      "section": "LECTURE 8 — PART 6",
+      "title": "Calling Another Contract",
+      "subtitle": "Interface + Address = Cross-Contract Communication"
+    },
+
+    {
+      "id": 14,
+      "type": "concept",
+      "title": "How Contract-to-Contract Communication Works",
+      "key_formula": "Interface  +  Contract Address  =  Contract Instance  →  Function Call",
+      "explanation": "Every deployed contract on Ethereum has a unique address (e.g. 0x1234...ABCD). To call its functions, you combine that address with an interface — giving Solidity enough information to make the call.",
+      "diagram": {
+        "steps": [
+          "Deploy Calculator → gets address 0x1234...ABCD",
+          "Create ICalculator interface",
+          "ICalculator(calculatorAddress) → contract instance",
+          "calculator.add(10, 20) → returns 30"
+        ]
+      },
+      "visual": {
+        "contract_a": "CalculatorUser",
+        "arrow": "function call via interface",
+        "contract_b": "Calculator",
+        "result": "Returns result (30)"
+      }
+    },
+
+    {
+      "id": 15,
+      "type": "code_slide",
+      "title": "Practical — Calculator + CalculatorUser",
+      "label": "CalculatorUser.sol",
+      "code_caller": "contract CalculatorUser {\n\n    function calculateAdd(\n        address calculatorAddress,\n        uint a,\n        uint b\n    )\n        public view\n        returns(uint)\n    {\n        // Step 1: Create instance using interface + address\n        ICalculator calculator =\n            ICalculator(calculatorAddress);\n\n        // Step 2: Call the function\n        return calculator.add(a, b);\n    }\n}",
+      "key_line": {
+        "code": "ICalculator calculator = ICalculator(calculatorAddress);",
+        "explanation": "The address alone doesn't tell Solidity which functions to call. We cast it to the interface type to create a typed contract instance."
+      },
+      "steps": [
+        "Deploy Calculator → copy its address",
+        "Deploy CalculatorUser",
+        "Call calculateAdd(calculatorAddress, 10, 20) → 30",
+        "Call calculateAdd(calculatorAddress, 100, 200) → 300"
+      ],
+      "result": "Two smart contracts just communicated on-chain."
+    },
+
+    {
+      "id": 16,
+      "type": "code_slide",
+      "title": "Reading & Modifying Another Contract's State",
+      "label": "ICounter Interface — Read vs Write",
+      "code": "interface ICounter {\n\n    // Read state — view function\n    function count()\n        external view\n        returns(uint);\n\n    // Modify state — costs gas\n    function increment()\n        external;\n}",
+      "comparison": {
+        "read": {
+          "label": "Reading State",
+          "detail": "view call — no gas cost — returns value immediately",
+          "icon": "👁"
+        },
+        "write": {
+          "label": "Changing State",
+          "detail": "state-changing transaction — costs gas — creates a transaction",
+          "icon": "✏️"
+        }
+      },
+      "note": "When a state-changing call happens through an interface, gas is consumed. This reinforces the view vs non-view distinction in a cross-contract context."
+    },
+
+    {
+      "id": 17,
+      "type": "section_divider",
+      "section": "LECTURE 9 — PART 8",
+      "title": "Libraries",
+      "subtitle": "Reusable utility logic — shared across contracts without inheritance"
+    },
+
+    {
+      "id": 18,
+      "type": "concept",
+      "title": "What is a Library?",
+      "definition": "A library is a collection of reusable functions. Instead of repeating utility logic across contracts, you write it once in a library and use it everywhere.",
+      "analogy": "A library is like a math toolkit. You don't build a calculator into every room — you have one math library everyone shares.",
+      "rules": [
+        "Declared with the library keyword",
+        "Cannot hold state variables",
+        "Cannot receive ETH",
+        "Functions are internal (same contract) or external (deployed separately)",
+        "Called directly: LibraryName.function() or via using for"
+      ],
+      "comparison": {
+        "without": "MathLibrary.square(5)",
+        "with_using": "5.square()"
+      }
+    },
+
+    {
+      "id": 19,
+      "type": "code_slide",
+      "title": "Library — Basic Example & using for",
+      "label": "MathLibrary.sol + Calculator.sol",
+      "code_library": "library MathLibrary {\n\n    function square(uint x)\n        internal pure\n        returns(uint)\n    {\n        return x * x;\n    }\n}",
+      "code_without": "// Without 'using for'\ncontract Calculator {\n\n    function calculateSquare(uint x)\n        public pure returns(uint)\n    {\n        return MathLibrary.square(x);\n    }\n}",
+      "code_with": "// With 'using for'\ncontract Calculator {\n\n    using MathLibrary for uint;\n\n    function calculateSquare(uint x)\n        public pure returns(uint)\n    {\n        return x.square(); // reads like method on uint\n    }\n}",
+      "key_insight": "using MathLibrary for uint attaches all library functions to the uint type. The variable itself becomes the first argument.",
+      "steps": [
+        "Write function in library",
+        "Add: using MathLibrary for uint;",
+        "Call: x.square() instead of MathLibrary.square(x)",
+        "Result is identical — syntax is cleaner"
+      ]
+    },
+
+    {
+      "id": 20,
+      "type": "code_slide",
+      "title": "Practical Library — ArrayUtils",
+      "label": "ArrayUtils.sol + ArrayExample.sol",
+      "code": "library ArrayUtils {\n\n    function max(uint[] memory values)\n        internal pure\n        returns(uint)\n    {\n        uint maximum = values[0];\n\n        for(uint i = 1; i < values.length; i++) {\n            if(values[i] > maximum) {\n                maximum = values[i];\n            }\n        }\n\n        return maximum;\n    }\n}\n\ncontract ArrayExample {\n\n    using ArrayUtils for uint[];\n\n    function getMaximum(uint[] memory values)\n        public pure\n        returns(uint)\n    {\n        return values.max();\n    }\n}",
+      "steps": [
+        "Deploy ArrayExample",
+        "Call getMaximum([10, 40, 20, 90, 30])",
+        "Expected result: 90",
+        "Notice: values.max() — max() is called on the array itself"
+      ],
+      "note": "using ArrayUtils for uint[] attaches max() to any uint[] array in this contract."
+    },
+
+    {
+      "id": 21,
+      "type": "section_divider",
+      "section": "LECTURE 9 — PART 9",
+      "title": "Custom Errors",
+      "subtitle": "Structured, gas-efficient error handling in Solidity"
+    },
+
+    {
+      "id": 22,
+      "type": "concept",
+      "title": "Custom Errors — Why & How",
+      "definition": "Custom errors are named error types defined with the error keyword. They are more gas-efficient than string revert messages and provide structured error information.",
+      "syntax_simple": "error NotOwner();",
+      "syntax_usage": "if(msg.sender != owner) {\n    revert NotOwner();\n}",
+      "syntax_with_params": "error InsufficientBalance(\n    uint requested,\n    uint available\n);\n\n// Usage:\nif(amount > balance) {\n    revert InsufficientBalance(\n        amount,\n        balance\n    );\n}",
+      "comparison": {
+        "require": {
+          "label": "require() — Old way",
+          "code": "require(\n    amount <= balance,\n    \"Insufficient balance\"\n);",
+          "pros": "Simple, very readable",
+          "cons": "Stores string on-chain — higher gas cost"
+        },
+        "custom_error": {
+          "label": "Custom Error — New way",
+          "code": "if(amount > balance) {\n    revert InsufficientBalance(\n        amount,\n        balance\n    );\n}",
+          "pros": "Structured, gas-efficient, carries data",
+          "cons": "Slightly more verbose"
+        }
+      }
+    },
+
+    {
+      "id": 23,
+      "type": "code_slide",
+      "title": "Custom Errors — Vault Contract",
+      "label": "Vault.sol",
+      "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract Vault {\n\n    address public owner;\n    uint public balance;\n\n    // Define custom errors\n    error NotOwner();\n    error InsufficientBalance(\n        uint requested,\n        uint available\n    );\n\n    constructor() {\n        owner = msg.sender;\n    }\n\n    function deposit() public payable {\n        balance += msg.value;\n    }\n\n    function withdraw(uint amount) public {\n\n        if(msg.sender != owner) {\n            revert NotOwner();\n        }\n\n        if(amount > balance) {\n            revert InsufficientBalance(\n                amount,\n                balance\n            );\n        }\n\n        balance -= amount;\n    }\n}",
+      "steps": [
+        "Deploy Vault",
+        "Call deposit() with some ETH",
+        "Try withdraw() from a different address → NotOwner error",
+        "Try withdraw(amount > balance) → InsufficientBalance error with values"
+      ]
+    },
+
+    {
+      "id": 24,
+      "type": "section_divider",
+      "section": "LECTURE 9 — PART 10 & 11",
+      "title": "constant & immutable",
+      "subtitle": "Values that never change after being set"
+    },
+
+    {
+      "id": 25,
+      "type": "concept",
+      "title": "constant vs immutable",
+      "definition_constant": "constant — value is fixed at compile time. Must be assigned when declared. Never changes.",
+      "definition_immutable": "immutable — value is assigned once during contract deployment (constructor). Cannot change after that.",
+      "code_constant": "contract TokenInfo {\n\n    uint public constant MAX_SUPPLY = 1000000;\n    string public constant NAME = \"MyToken\";\n    uint public constant FEE = 5;\n\n}",
+      "code_immutable": "contract Token {\n\n    address public immutable owner;\n\n    constructor() {\n        owner = msg.sender; // set once at deploy\n    }\n}",
+      "comparison_table": {
+        "columns": ["Feature", "constant", "immutable"],
+        "rows": [
+          ["When is value set?",    "Compile time",         "Deployment (constructor)"],
+          ["Can it change?",        "❌ Never",             "❌ Never (after deploy)"],
+          ["Value known upfront?",  "✅ Yes — hardcoded",   "❌ No — determined at runtime"],
+          ["Gas efficiency",        "✅ Very efficient",    "✅ Very efficient"],
+          ["Example use",           "MAX_SUPPLY, FEE, NAME","owner, treasury address, token address"]
+        ]
+      }
+    },
+
+    {
+      "id": 26,
+      "type": "section_divider",
+      "section": "LECTURE 9 — PART 12",
+      "title": "receive() & fallback()",
+      "subtitle": "How Ethereum contracts handle incoming ETH"
+    },
+
+    {
+      "id": 27,
+      "type": "concept",
+      "title": "receive() and fallback() — ETH Reception",
+      "question": "What happens when someone sends ETH directly to a contract address?",
+      "receive_def": "receive() is called when the contract receives Ether with empty calldata (a plain ETH transfer).",
+      "fallback_def": "fallback() is called when no matching function is found — or when ETH is sent with data but no receive() exists.",
+      "syntax_receive": "receive() external payable {\n    // called on plain ETH transfers\n}",
+      "syntax_fallback": "fallback() external payable {\n    // called when no function matches\n}",
+      "decision_flow": [
+        "ETH / CALL arrives at contract",
+        "Does calldata match a function signature?",
+        "YES → Execute that function",
+        "NO → Is calldata empty?",
+        "YES (empty calldata) → receive()",
+        "NO (has data, no match) → fallback()"
+      ]
+    },
+
+    {
+      "id": 28,
+      "type": "code_slide",
+      "title": "Practical — EtherReceiver Contract",
+      "label": "EtherReceiver.sol",
+      "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract EtherReceiver {\n\n    event Received(\n        address sender,\n        uint amount\n    );\n\n    receive() external payable {\n        emit Received(\n            msg.sender,\n            msg.value\n        );\n    }\n\n    fallback() external payable {\n        // handles unmatched calls\n    }\n\n    function getBalance()\n        public view\n        returns(uint)\n    {\n        return address(this).balance;\n    }\n}",
+      "key_variables": [
+        { "name": "msg.value",            "meaning": "Amount of ETH sent with this call (in wei)" },
+        { "name": "msg.sender",           "meaning": "Address that sent the ETH" },
+        { "name": "address(this).balance","meaning": "Total ETH balance held by this contract" }
+      ],
+      "steps": [
+        "Deploy EtherReceiver",
+        "Send test ETH to the contract address",
+        "Observe the Received event fires in Remix logs",
+        "Call getBalance() → shows ETH balance of the contract"
+      ]
+    },
+
+    {
+      "id": 29,
+      "type": "code_slide",
+      "title": "Real-World Protocols That Use Interfaces",
+      "label": "Why Interfaces Matter in Production",
+      "real_world": [
+        {
+          "name": "ERC20 Token Standard",
+          "detail": "IERC20 is an interface. Every token — USDT, LINK, UNI — implements the same interface: transfer(), approve(), balanceOf().",
+          "color": "1A6FBF"
+        },
+        {
+          "name": "ERC721 NFT Standard",
+          "detail": "IERC721 is an interface. Every NFT contract implements ownerOf(), transferFrom(), safeTransferFrom().",
+          "color": "9B59B6"
+        },
+        {
+          "name": "Chainlink Price Feeds",
+          "detail": "AggregatorV3Interface lets your contract call Chainlink's price feeds without knowing internal implementation.",
+          "color": "E74C3C"
+        },
+        {
+          "name": "Uniswap V2 Router",
+          "detail": "IUniswapV2Router02 interface lets any contract interact with Uniswap swaps and liquidity pools.",
+          "color": "00C6AE"
+        }
+      ],
+      "key_insight": "Every production protocol interacts with other contracts through interfaces — never through internal implementation knowledge."
+    },
+
+    {
+      "id": 30,
+      "type": "final_architecture",
+      "title": "Final Architecture Diagram — Full Picture",
+      "description": "How all today's concepts fit together in a real Blockchain Application",
+      "layers": [
+        {
+          "label": "Code Reuse Layer",
+          "items": ["Abstract Contract", "Interface", "Library"],
+          "color": "1A6FBF"
+        },
+        {
+          "label": "Implementation Layer",
+          "items": ["Child Contract", "Contract API", "Reusable Logic"],
+          "color": "00C6AE"
+        },
+        {
+          "label": "Communication Layer",
+          "items": ["Contract Address", "Interface Cast", "Cross-Contract Call"],
+          "color": "F59E0B"
+        },
+        {
+          "label": "State Operations",
+          "items": ["Read State (view)", "Change State (transaction + gas)"],
+          "color": "9B59B6"
+        },
+        {
+          "label": "Error & Safety Layer",
+          "items": ["Custom Errors", "revert Error()", "constant / immutable"],
+          "color": "E74C3C"
+        },
+        {
+          "label": "ETH Reception Layer",
+          "items": ["receive() — empty calldata", "fallback() — unmatched calls"],
+          "color": "27AE60"
+        }
+      ]
+    },
+
+    {
+      "id": 31,
+      "type": "summary_table",
+      "title": "Complete Lecture Summary",
+      "items": [
+        { "concept": "Abstract Contract", "keyword": "abstract contract",       "meaning": "Incomplete base — child must implement abstract functions" },
+        { "concept": "Abstract Function", "keyword": "virtual (no body)",       "meaning": "Declares behavior child must provide" },
+        { "concept": "Interface",         "keyword": "interface",               "meaning": "Pure API — external functions only, no implementation" },
+        { "concept": "Contract Address",  "keyword": "address",                 "meaning": "Unique identifier for every deployed contract" },
+        { "concept": "Cross-Contract",    "keyword": "IFace(addr).fn()",        "meaning": "Call another contract using interface + address" },
+        { "concept": "Library",           "keyword": "library",                 "meaning": "Reusable utility functions shared across contracts" },
+        { "concept": "using for",         "keyword": "using Lib for type",      "meaning": "Attach library functions to a Solidity type" },
+        { "concept": "Custom Error",      "keyword": "error / revert",          "meaning": "Structured, gas-efficient error with optional parameters" },
+        { "concept": "constant",          "keyword": "constant",                "meaning": "Value fixed at compile time — never changes" },
+        { "concept": "immutable",         "keyword": "immutable",               "meaning": "Value set at deployment — fixed forever after" },
+        { "concept": "receive()",         "keyword": "receive() payable",       "meaning": "Handles plain ETH transfers (empty calldata)" },
+        { "concept": "fallback()",        "keyword": "fallback() payable",      "meaning": "Handles unmatched function calls / ETH with data" }
+      ]
+    },
+
+    {
+      "id": 32,
+      "type": "practical_order",
+      "title": "Recommended Practical Order in Remix",
+      "items": [
+        { "step": 1,  "contract": "Animal / Dog / Cat",     "concepts": "Abstract contract, abstract function, override" },
+        { "step": 2,  "contract": "PaymentProcessor",       "concepts": "Real-world abstraction pattern" },
+        { "step": 3,  "contract": "Calculator",             "concepts": "Interface definition" },
+        { "step": 4,  "contract": "ICalculator",            "concepts": "Interface implementation + override" },
+        { "step": 5,  "contract": "CalculatorUser",         "concepts": "Contract address, interface cast, cross-contract call" },
+        { "step": 6,  "contract": "Counter + ICounter",     "concepts": "Reading vs modifying another contract's state" },
+        { "step": 7,  "contract": "MathLibrary",            "concepts": "Library + using for" },
+        { "step": 8,  "contract": "ArrayUtils",             "concepts": "Practical library with using for uint[]" },
+        { "step": 9,  "contract": "Vault",                  "concepts": "Custom errors, error keyword, revert" },
+        { "step": 10, "contract": "TokenInfo",              "concepts": "constant keyword" },
+        { "step": 11, "contract": "Token",                  "concepts": "immutable keyword" },
+        { "step": 12, "contract": "EtherReceiver",          "concepts": "receive(), fallback(), msg.value, contract balance" }
+      ]
+    },
+
+    {
+      "id": 33,
+      "type": "closing",
+      "title": "Thank You",
+      "subtitle": "Lectures 7 Complete",
+      "key_message": "Today we moved from writing individual smart contracts to thinking about how smart contracts are designed as systems.",
+      "recap": [
+        "Abstract contracts provide reusable base structure",
+        "Interfaces define how other contracts communicate with you",
+        "Interface + Address = cross-contract function call",
+        "Libraries allow reusable utility logic across contracts",
+        "Custom errors provide structured & efficient error handling",
+        "constant = compile time  |  immutable = deployment time",
+        "receive() handles plain ETH  |  fallback() handles unmatched calls"
+      ],
+      "closing_statement": "Ethereum applications are not one contract. They are SYSTEMS of contracts — inheriting, communicating, sharing libraries, and following interface standards. This is the foundation of every DeFi protocol, token system, marketplace, and DAO.",
+      "next": "Next Lecture: ERC20 Token Standard — Writing Your First Token",
+      "footer": "Blockchain Course  |  Lecture 7  |  Questions & Discussion"
+    }
+
+  ]
+}
