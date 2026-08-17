@@ -22,7 +22,7 @@
       "type": "agenda",
       "title": "Lecture Agenda",
       "part1": {
-        "label": "Lecture 8 — Architecture",
+        "label": "Lecture 7 — Architecture",
         "color": "1A6FBF",
         "items": [
           "Recap: Inheritance & Enums",
@@ -35,7 +35,7 @@
         ]
       },
       "part2": {
-        "label": "Lecture 9 — Advanced Features",
+        "label": "Lecture 8 — Advanced Features",
         "color": "00C6AE",
         "items": [
           "Libraries & using for",
@@ -94,7 +94,7 @@
     {
       "id": 5,
       "type": "section_divider",
-      "section": "LECTURE 8 — PART 2",
+      "section": "LECTURE 7 — PART 2",
       "title": "Abstract Contracts",
       "subtitle": "Incomplete contracts that define structure for child contracts"
     },
@@ -163,7 +163,7 @@
     {
       "id": 9,
       "type": "section_divider",
-      "section": "LECTURE 8 — PART 4",
+      "section": "LECTURE 7 — PART 4",
       "title": "Interfaces",
       "subtitle": "The foundation of contract-to-contract communication in Solidity"
     },
@@ -221,7 +221,7 @@
     {
       "id": 13,
       "type": "section_divider",
-      "section": "LECTURE 8 — PART 6",
+      "section": "LECTURE 7 — PART 6",
       "title": "Calling Another Contract",
       "subtitle": "Interface + Address = Cross-Contract Communication"
     },
@@ -291,7 +291,7 @@
     {
       "id": 17,
       "type": "section_divider",
-      "section": "LECTURE 9 — PART 8",
+      "section": "LECTURE 8 — PART 8",
       "title": "Libraries",
       "subtitle": "Reusable utility logic — shared across contracts without inheritance"
     },
@@ -350,7 +350,7 @@
     {
       "id": 21,
       "type": "section_divider",
-      "section": "LECTURE 9 — PART 9",
+      "section": "LECTURE 8— PART 9",
       "title": "Custom Errors",
       "subtitle": "Structured, gas-efficient error handling in Solidity"
     },
@@ -396,7 +396,7 @@
     {
       "id": 24,
       "type": "section_divider",
-      "section": "LECTURE 9 — PART 10 & 11",
+      "section": "LECTURE 8— PART 10 & 11",
       "title": "constant & immutable",
       "subtitle": "Values that never change after being set"
     },
@@ -424,7 +424,7 @@
     {
       "id": 26,
       "type": "section_divider",
-      "section": "LECTURE 9 — PART 12",
+      "section": "LECTURE 8— PART 12",
       "title": "receive() & fallback()",
       "subtitle": "How Ethereum contracts handle incoming ETH"
     },
@@ -594,6 +594,7 @@
       "closing_statement": "Ethereum applications are not one contract. They are SYSTEMS of contracts — inheriting, communicating, sharing libraries, and following interface standards. This is the foundation of every DeFi protocol, token system, marketplace, and DAO.",
       "next": "Next Lecture: ERC20 Token Standard — Writing Your First Token",
       "footer": "Blockchain Course  |  Lecture 7  |  Questions & Discussion"
+      
     }
 
   ]
