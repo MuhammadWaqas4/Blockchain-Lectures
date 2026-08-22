@@ -1,0 +1,430 @@
+{
+  "presentation": {
+    "title": "Blockchain Technology – Lecture 8",
+    "author": "Muhammad Waqas | https://github.com/MuhammadWaqas4 | +92 333 5086624",
+    "subject": "ERC-20 Token Standard — Fungible Tokens in Solidity",
+    "outputPath": "D:/work/Drive (Extra)/work/Blockchain-Lectures/Blockchain_Lecture10.pptx"
+  },
+  "slides": [
+
+    {
+      "id": 1,
+      "type": "title",
+      "tag": "LECTURE 8",
+      "title": "ERC-20 Token Standard",
+      "subtitle": "Fungible Tokens  •  Balances  •  Transfers  •  Approvals  •  OpenZeppelin",
+      "duration": "Duration: 1.5 Hours",
+      "footer": "Muhammad Waqas  | https://github.com/MuhammadWaqas4 | +92 333 5086624"
+    },
+
+    {
+      "id": 2,
+      "type": "agenda",
+      "title": "Lecture Agenda",
+      "items": [
+        "What is a Token Standard?",
+        "ERC-20 — Fungible vs Non-Fungible",
+        "Core ERC-20 Functions Overview",
+        "How Balances Are Stored (mappings)",
+        "Practical 1 — Build SimpleToken",
+        "transfer() + Transfer Event",
+        "Approval System — approve() & allowance()",
+        "Practical 2 — transferFrom()",
+        "Complete Manual Token Contract",
+        "OpenZeppelin ERC-20 Implementation",
+        "decimals() Explained",
+        "Final Summary & Diagram"
+      ]
+    },
+
+    {
+      "id": 3,
+      "type": "opening",
+      "title": "Introduction — Why ERC-20 Matters",
+      "quote": "\"Today we are starting one of the most important topics in Solidity development: token standards.\"",
+      "known_concepts": [
+        "Variables & Mappings",
+        "Structs & Functions",
+        "Modifiers & Constructors",
+        "Inheritance & Interfaces",
+        "Libraries & Custom Errors",
+        "Events & Contract-to-Contract"
+      ],
+      "transition": "Now we use all those concepts together to understand something that almost every blockchain developer works with: ERC-20 tokens."
+    },
+
+    {
+      "id": 4,
+      "type": "standard_intro",
+      "title": "What is a Standard? — The USB Analogy",
+      "analogy": "Think about USB. Different companies manufacture laptops, keyboards, and storage devices — but because they follow the USB standard, they all work together.",
+      "erc20_point": "ERC-20 works the same way. If a token follows the ERC-20 standard, any wallet, exchange, or application already knows how to interact with it.",
+      "diagram": {
+        "top": "Wallet (MetaMask)",
+        "label": "understands ERC-20",
+        "tokens": ["USDT", "USDC", "UNI", "LINK", "Any ERC-20"]
+      },
+      "key_insight": "MetaMask does not need custom code for every token. A DEX does not need different logic for every token. The standard handles it."
+    },
+
+    {
+      "id": 5,
+      "type": "concept",
+      "title": "What is ERC-20?",
+      "definition": "ERC-20 (Ethereum Request for Comments #20) is a standard that defines how fungible tokens should behave on the Ethereum blockchain.",
+      "fungible_explanation": "Fungible means every unit is interchangeable — identical in value and properties.",
+      "examples": [
+        { "label": "1 USDT", "equals": "any other 1 USDT", "fungible": true },
+        { "label": "1 USD bill", "equals": "any other 1 USD bill", "fungible": true },
+        { "label": "NFT #100", "equals": "NOT equal to NFT #101", "fungible": false }
+      ],
+      "comparison": {
+        "erc20": { "label": "ERC-20", "type": "Fungible", "example": "USDT, USDC, UNI, LINK", "color": "1A6FBF" },
+        "erc721": { "label": "ERC-721", "type": "Non-Fungible (NFT)", "example": "CryptoPunks, BAYC", "color": "9B59B6" }
+      }
+    },
+
+    {
+      "id": 6,
+      "type": "functions_overview",
+      "title": "Core ERC-20 Functions",
+      "subtitle": "Every ERC-20 token must implement these 6 functions",
+      "functions": [
+        {
+          "name": "totalSupply()",
+          "description": "How many tokens exist in total?",
+          "example": "1,000,000 MTK",
+          "color": "1A6FBF"
+        },
+        {
+          "name": "balanceOf(address)",
+          "description": "How many tokens does this wallet hold?",
+          "example": "Alice → 500  |  Bob → 300",
+          "color": "00C6AE"
+        },
+        {
+          "name": "transfer(to, amount)",
+          "description": "Send your tokens directly to another wallet.",
+          "example": "Alice sends 200 MTK to Bob",
+          "color": "F59E0B"
+        },
+        {
+          "name": "approve(spender, amount)",
+          "description": "Give another address permission to spend your tokens.",
+          "example": "Alice approves DEX to spend80 MTK",
+          "color": "E74C3C"
+        },
+        {
+          "name": "allowance(owner, spender)",
+          "description": "Check how many tokens a spender is allowed to use.",
+          "example": "Alice → DEX = 100 MTK remaining",
+          "color": "9B59B6"
+        },
+        {
+          "name": "transferFrom(from, to, amount)",
+          "description": "An approved spender transfers tokens on behalf of the owner.",
+          "example": "DEX moves 100 MTK from Alice to Bob",
+          "color": "27AE60"
+        }
+      ],
+      "note": "approve, allowance, and transferFrom are extremely important in DeFi protocols."
+    },
+
+    {
+      "id": 7,
+      "type": "concept",
+      "title": "How Token Balances Are Stored",
+      "wrong_way": {
+        "label": "❌  Wrong — Does NOT scale",
+        "code": "uint aliceBalance;\nuint bobBalance;\nuint saraBalance;\n// One variable per user? Impossible!"
+      },
+      "right_way": {
+        "label": "✅  Correct — Using a Mapping",
+        "code": "mapping(address => uint256) public balanceOf;\n\n// Stores every wallet's balance in one structure"
+      },
+      "diagram": {
+        "title": "balanceOf mapping",
+        "entries": [
+          { "address": "0xAAA...", "balance": "500 MTK" },
+          { "address": "0xBBB...", "balance": "300 MTK" },
+          { "address": "0xCCC...", "balance": "200 MTK" }
+        ]
+      },
+      "insight": "This is exactly why we learned mappings in earlier lectures. They are the perfect data structure for token balances.",
+      "supply_var": "uint256 public totalSupply;   // total tokens that exist"
+    },
+
+    {
+      "id": 8,
+      "type": "code_slide",
+      "title": "Practical 1 — Build SimpleToken",
+      "label": "SimpleToken.sol — Deploy with initialSupply = 1000",
+      "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract SimpleToken {\n\n    string public name = \"My Token\";\n    string public symbol = \"MTK\";\n\n    uint256 public totalSupply;\n\n    mapping(address => uint256) public balanceOf;\n\n    constructor(uint256 _initialSupply) {\n        totalSupply = _initialSupply;\n        balanceOf[msg.sender] = _initialSupply;\n    }\n\n}",
+      "line_explanations": [
+        "name — human-readable token name (e.g. 'My Token')",
+        "symbol — short ticker symbol (e.g. 'MTK')",
+        "totalSupply — total number of tokens that exist",
+        "balanceOf — maps every wallet address to its token balance",
+        "constructor — assigns the entire initial supply to the deployer"
+      ],
+      "deploy_diagram": {
+        "action": "Deploy with initialSupply = 1000",
+        "result_supply": "totalSupply() → 1000",
+        "result_balance": "balanceOf(deployer) → 1000"
+      },
+      "steps": [
+        "Deploy with constructor argument: 1000",
+        "Call totalSupply() → 1000",
+        "Call balanceOf(your address) → 1000"
+      ]
+    },
+
+    {
+      "id": 9,
+      "type": "code_slide",
+      "title": "Adding transfer()",
+      "label": "transfer() function",
+      "code": "function transfer(\n    address to,\n    uint256 amount\n)\n    public\n    returns (bool)\n{\n    require(\n        balanceOf[msg.sender] >= amount,\n        \"Insufficient balance\"\n    );\n\n    balanceOf[msg.sender] -= amount;\n    balanceOf[to] += amount;\n\n    return true;\n}",
+      "logic_steps": [
+        "Check sender has enough balance (require)",
+        "Subtract tokens from sender's balance",
+        "Add same amount to receiver's balance",
+        "Return true on success"
+      ],
+      "before_after": {
+        "before": { "alice": 1000, "bob": 0 },
+        "call": "transfer(Bob, 200)",
+        "after": { "alice": 800, "bob": 200 }
+      },
+      "steps": [
+        "Copy a second account address from Remix",
+        "Call transfer(secondAccount, 200)",
+        "Check balanceOf(deployer) → 800",
+        "Check balanceOf(secondAccount) → 200"
+      ]
+    },
+
+    {
+      "id": 10,
+      "type": "code_slide",
+      "title": "Transfer Event",
+      "label": "event Transfer + emit",
+      "code_event": "event Transfer(\n    address indexed from,\n    address indexed to,\n    uint256 value\n);",
+      "code_emit": "// Inside transfer():\nemit Transfer(\n    msg.sender,\n    to,\n    amount\n);\n\n// Inside constructor (mint):\nemit Transfer(\n    address(0),   // zero address = minting\n    msg.sender,\n    _initialSupply\n);",
+      "flow": [
+        "transfer() is called",
+        "Balances are updated",
+        "Transfer event is emitted",
+        "Wallets / Explorers / Frontends detect it"
+      ],
+      "why_important": [
+        "MetaMask uses Transfer events to show token activity",
+        "Etherscan tracks all token transfers via this event",
+        "DeFi frontends subscribe to this event to update UI",
+        "Indexers (TheGraph) build databases from events"
+      ]
+    },
+
+    {
+      "id": 11,
+      "type": "concept",
+      "title": "The Approval System — Why It Exists",
+      "problem": "Decentralized applications (DEXes, lending protocols) often need to move tokens on behalf of users. But a contract cannot simply take your tokens without permission.",
+      "analogy": "Alice wants to swap 100 USDT on Uniswap. She must first APPROVE Uniswap to spend 100 USDT on her behalf. Then Uniswap can call transferFrom() to move those tokens.",
+      "diagram": {
+        "steps": [
+          "Alice calls approve(DEX, 100)",
+          "Allowance stored: Alice → DEX = 100",
+          "DEX calls transferFrom(Alice, Bob, 100)",
+          "Allowance reduced: Alice → DEX = 0",
+          "Alice = 900  |  Bob = 100"
+        ]
+      },
+      "key_sentence": "approve() does NOT transfer tokens. It only stores permission.",
+      "nested_mapping": "mapping(address => mapping(address => uint256)) public allowance;",
+      "mapping_diagram": {
+        "owner": "Alice",
+        "spender": "DEX Contract",
+        "amount": "100 MTK"
+      }
+    },
+
+    {
+      "id": 12,
+      "type": "code_slide",
+      "title": "Practical 2 — approve() & Approval Event",
+      "label": "approve() function + Approval event",
+      "code_event": "event Approval(\n    address indexed owner,\n    address indexed spender,\n    uint256 value\n);",
+      "code_function": "function approve(\n    address spender,\n    uint256 amount\n)\n    public\n    returns (bool)\n{\n    allowance[msg.sender][spender] = amount;\n\n    emit Approval(\n        msg.sender,\n        spender,\n        amount\n    );\n\n    return true;\n}",
+      "key_points": [
+        "No tokens move when approve() is called",
+        "Only permission is stored in the allowance mapping",
+        "owner = msg.sender (the one granting permission)",
+        "spender = the address allowed to spend",
+        "The Approval event notifies the outside world"
+      ],
+      "steps": [
+        "Call approve(secondAccount, 200)",
+        "Call allowance(deployer, secondAccount) → 200",
+        "Notice: balanceOf(deployer) is still unchanged"
+      ]
+    },
+
+    {
+      "id": 13,
+      "type": "code_slide",
+      "title": "transferFrom() — Delegated Transfer",
+      "label": "transferFrom() function",
+      "code": "function transferFrom(\n    address from,\n    address to,\n    uint256 amount\n)\n    public\n    returns (bool)\n{\n    require(\n        balanceOf[from] >= amount,\n        \"Insufficient balance\"\n    );\n\n    require(\n        allowance[from][msg.sender] >= amount,\n        \"Allowance exceeded\"\n    );\n\n    allowance[from][msg.sender] -= amount;\n\n    balanceOf[from] -= amount;\n    balanceOf[to] += amount;\n\n    emit Transfer(from, to, amount);\n\n    return true;\n}",
+      "step_explanations": [
+        "Check the owner (from) has enough tokens",
+        "Check the caller has enough allowance",
+        "Reduce the remaining allowance",
+        "Move tokens from owner to recipient",
+        "Emit the Transfer event"
+      ],
+      "scenario": {
+        "setup": "Alice owns 1000 tokens. Alice approves DEX = 200.",
+        "call": "DEX calls transferFrom(Alice, Bob, 100)",
+        "result_alice": "900",
+        "result_bob": "100",
+        "remaining_allowance": "100"
+      }
+    },
+
+    {
+      "id": 14,
+      "type": "code_slide",
+      "title": "Complete SimpleToken Contract",
+      "label": "SimpleToken.sol — Full ERC-20-like Implementation",
+      "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract SimpleToken {\n\n    string public name = \"My Token\";\n    string public symbol = \"MTK\";\n    uint256 public totalSupply;\n\n    mapping(address => uint256) public balanceOf;\n    mapping(address => mapping(address => uint256))\n        public allowance;\n\n    event Transfer(\n        address indexed from,\n        address indexed to,\n        uint256 value\n    );\n\n    event Approval(\n        address indexed owner,\n        address indexed spender,\n        uint256 value\n    );\n\n    constructor(uint256 _initialSupply) {\n        totalSupply = _initialSupply;\n        balanceOf[msg.sender] = _initialSupply;\n        emit Transfer(address(0), msg.sender, _initialSupply);\n    }\n\n    function transfer(address to, uint256 amount)\n        public returns (bool)\n    {\n        require(balanceOf[msg.sender] >= amount,\n            \"Insufficient balance\");\n        balanceOf[msg.sender] -= amount;\n        balanceOf[to] += amount;\n        emit Transfer(msg.sender, to, amount);\n        return true;\n    }\n\n    function approve(address spender, uint256 amount)\n        public returns (bool)\n    {\n        allowance[msg.sender][spender] = amount;\n        emit Approval(msg.sender, spender, amount);\n        return true;\n    }\n\n    function transferFrom(address from, address to,\n        uint256 amount) public returns (bool)\n    {\n        require(balanceOf[from] >= amount,\n            \"Insufficient balance\");\n        require(allowance[from][msg.sender] >= amount,\n            \"Allowance exceeded\");\n        allowance[from][msg.sender] -= amount;\n        balanceOf[from] -= amount;\n        balanceOf[to] += amount;\n        emit Transfer(from, to, amount);\n        return true;\n    }\n}",
+      "what_it_covers": [
+        "State variables — name, symbol, totalSupply",
+        "Mappings — balanceOf, allowance",
+        "Events — Transfer, Approval",
+        "Constructor — mints initial supply",
+        "transfer() — direct token send",
+        "approve() — grant permission",
+        "transferFrom() — delegated spend"
+      ]
+    },
+
+    {
+      "id": 15,
+      "type": "concept",
+      "title": "OpenZeppelin ERC-20 — Production Ready",
+      "message": "Everything we just built manually was for learning. In production, never rewrite ERC-20 from scratch. Use audited, battle-tested implementations like OpenZeppelin.",
+      "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\nimport \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";\n\ncontract MyToken is ERC20 {\n\n    constructor(uint256 initialSupply)\n        ERC20(\"My Token\", \"MTK\")\n    {\n        _mint(\n            msg.sender,\n            initialSupply * 10 ** decimals()\n        );\n    }\n}",
+      "why_openzeppelin": [
+        "Audited by top security firms — widely trusted",
+        "Used in USDC, AAVE, Compound, Uniswap, and thousands more",
+        "All ERC-20 functions already implemented",
+        "Just inherit and call _mint() in the constructor",
+        "Same concepts: inheritance, events, mappings — all inside"
+      ],
+      "concepts_connection": {
+        "title": "Everything from previous lectures is here:",
+        "items": ["Inheritance (is ERC20)", "Events (Transfer, Approval)", "Mappings (balanceOf, allowance)", "Functions (transfer, approve, transferFrom)", "Interfaces (IERC20 underneath)", "Internal logic (_mint, _burn, _transfer)"]
+      }
+    },
+
+    {
+      "id": 16,
+      "type": "concept",
+      "title": "Understanding decimals()",
+      "explanation": "Most ERC-20 tokens use 18 decimal places. Solidity only works with integers — decimals are a display convention.",
+      "example": {
+        "whole_token": "1 Token",
+        "internal_representation": "1,000,000,000,000,000,000",
+        "formula": "1 × 10^18 smallest units"
+      },
+      "code": "// Mint 1000 whole tokens:\n_mint(\n    msg.sender,\n    1000 * 10 ** decimals()\n);\n\n// decimals() returns 18 by default\n// So: 1000 * 10^18 units are created",
+      "analogy": "Just like 1 ETH = 1,000,000,000,000,000,000 wei — the display shows 1 ETH but internally it is always an integer.",
+      "note": "Token decimals are only a display convention. All Solidity arithmetic operates on raw integers.",
+      "common_decimals": [
+        { "token": "Most ERC-20 (ETH, UNI, LINK)", "decimals": "18" },
+        { "token": "USDT / USDC", "decimals": "6" },
+        { "token": "WBTC", "decimals": "8" }
+      ]
+    },
+
+    {
+      "id": 17,
+      "type": "summary_diagram",
+      "title": "Final Architecture — ERC-20 Token Map",
+      "layers": [
+        {
+          "label": "Token Identity",
+          "items": ["name", "symbol", "decimals()"],
+          "color": "1A6FBF"
+        },
+        {
+          "label": "Supply & Balances",
+          "items": ["totalSupply", "balanceOf(address)"],
+          "color": "00C6AE"
+        },
+        {
+          "label": "Direct Transfer",
+          "items": ["transfer(to, amount)"],
+          "color": "F59E0B"
+        },
+        {
+          "label": "Delegated Spend",
+          "items": ["approve(spender, amount)", "allowance(owner, spender)", "transferFrom(from, to, amount)"],
+          "color": "E74C3C"
+        },
+        {
+          "label": "Events",
+          "items": ["Transfer(from, to, value)", "Approval(owner, spender, value)"],
+          "color": "9B59B6"
+        },
+        {
+          "label": "Production",
+          "items": ["OpenZeppelin ERC20.sol", "_mint() / _burn()"],
+          "color": "27AE60"
+        }
+      ]
+    },
+
+    {
+      "id": 18,
+      "type": "summary_table",
+      "title": "Lecture 8 — Complete Summary",
+      "items": [
+        { "concept": "ERC-20",           "detail": "Standard interface for fungible tokens on Ethereum" },
+        { "concept": "Fungible",         "detail": "Every unit is identical and interchangeable in value" },
+        { "concept": "totalSupply",      "detail": "Total number of tokens that exist in the contract" },
+        { "concept": "balanceOf",        "detail": "Mapping — wallet address → token balance" },
+        { "concept": "transfer()",       "detail": "Owner sends tokens directly to another address" },
+        { "concept": "approve()",        "detail": "Owner grants a spender permission to spend tokens" },
+        { "concept": "allowance()",      "detail": "Query how many tokens a spender is permitted to use" },
+        { "concept": "transferFrom()",   "detail": "Approved spender moves tokens on behalf of the owner" },
+        { "concept": "Transfer event",   "detail": "Emitted on every token movement — wallets track this" },
+        { "concept": "Approval event",   "detail": "Emitted when approve() is called" },
+        { "concept": "decimals()",       "detail": "Display precision — 18 decimals by default" },
+        { "concept": "OpenZeppelin",     "detail": "Production-grade audited ERC-20 implementation" }
+      ]
+    },
+
+    {
+      "id": 19,
+      "type": "closing",
+      "title": "Thank You",
+      "subtitle": "Lecture 8 Complete",
+      "key_message": "Today we moved from learning Solidity features individually to understanding an actual blockchain standard that powers billions of dollars in value.",
+      "recap": [
+        "ERC-20 is a standard — not just one contract",
+        "Balances stored in mapping(address => uint256)",
+        "transfer() — direct owner-to-receiver send",
+        "approve() + allowance() + transferFrom() = DeFi",
+        "Transfer & Approval events power wallets and explorers",
+        "OpenZeppelin provides audited production implementation",
+        "decimals() is a display convention — integers internally"
+      ],
+      "closing_statement": "From this point onward, you should be able to look at any ERC-20 contract and understand exactly why mappings, events, inheritance, interfaces, and modifiers are being used. You now speak the language of token development.",
+      "next": "Next Lecture: ERC-721 NFT Standard — Non-Fungible Tokens",
+      "footer": "Blockchain Course  |  Lecture 8  |  Questions & Discussion"
+    }
+
+  ]
+}
