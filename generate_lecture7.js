@@ -53,7 +53,7 @@ pres.subject = meta.subject || "";
 const FONT_HEAD = "Calibri";
 const FONT_BODY = "Calibri";
 const FONT_CODE = "Courier New";
-const CREDIT_LINE = "Muhammad Waqas  | https://github.com/MuhammadWaqas4 | +923335086624";
+const CREDIT_LINE = "Muhammad Waqas  | https://github.com/MuhammadWaqas4 | +92 333 5086624";
 
 // ─── SHARED HELPERS ───────────────────────────────────────────────────────────
 function darkBg(slide)  { slide.background = { color: T.primary }; }
