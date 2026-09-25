@@ -28,6 +28,7 @@ Each file has several small contracts. Open the file in Remix and pick one contr
 | [practicals/Lecture5_Modifiers_AccessControl.sol](practicals/Lecture5_Modifiers_AccessControl.sol) | Modifiers, `require` / `revert` / `assert` |
 | [practicals/Lecture6_Inheritance_Enums_Interfaces.sol](practicals/Lecture6_Inheritance_Enums_Interfaces.sol) | Inheritance, enums, abstract, interfaces |
 | [practicals/Lecture7_Contract_Architecture.sol](practicals/Lecture7_Contract_Architecture.sol) | Abstract, interfaces, libraries, custom errors, `receive` / `fallback` |
+| [practicals/Lecture8_ERC20_Token_Standard.sol](practicals/Lecture8_ERC20_Token_Standard.sol) | ERC-20: balances, `transfer`, `approve`, `transferFrom` |
 
 Compiler: `pragma solidity ^0.8.20`.
 
