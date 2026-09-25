@@ -8,7 +8,7 @@ Developed by Muhammad Waqas.
 
 | Path | Contents |
 | --- | --- |
-| `practicals/` | Six Solidity files, one per lecture |
+| `practicals/` | Solidity files, one per lecture |
 | `guides/remix/` | How to compile and run those contracts in Remix |
 | `guides/foundry/` | How to test and deploy with Foundry |
 | `guides/hardhat/` | How to test and deploy with Hardhat |
@@ -27,6 +27,7 @@ Each file has several small contracts. Open the file in Remix and pick one contr
 | [practicals/Lecture4_Functions_Payable_Bank.sol](practicals/Lecture4_Functions_Payable_Bank.sol) | `msg.sender`, payable, Simple Bank |
 | [practicals/Lecture5_Modifiers_AccessControl.sol](practicals/Lecture5_Modifiers_AccessControl.sol) | Modifiers, `require` / `revert` / `assert` |
 | [practicals/Lecture6_Inheritance_Enums_Interfaces.sol](practicals/Lecture6_Inheritance_Enums_Interfaces.sol) | Inheritance, enums, abstract, interfaces |
+| [practicals/Lecture7_Contract_Architecture.sol](practicals/Lecture7_Contract_Architecture.sol) | Abstract, interfaces, libraries, custom errors, `receive` / `fallback` |
 
 Compiler: `pragma solidity ^0.8.20`.
 
