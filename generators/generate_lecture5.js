@@ -13,12 +13,9 @@ const fs      = require("fs");
 const os      = require("os");
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-const JSON_FILE   = path.join(__dirname, "lecture5_slides.json");
-const OUTPUT_PATH = path.join(
-  os.homedir(),
-  "Desktop", "Drive (D) work", "Drive (Extra)",
-  "work", "Blockchain-Lectures", "slides"
-);
+const ROOT = path.join(__dirname, "..");
+const JSON_FILE = path.join(ROOT, "data", "lecture5_slides.json");
+const OUTPUT_PATH = path.join(ROOT, "slides");
 const OUTPUT_FILE = "Lecture5_Modifiers_AccessControl_ErrorHandling.pptx";
 // ──────────────────────────────────────────────────────────────────────────────
 

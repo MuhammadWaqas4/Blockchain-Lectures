@@ -12,9 +12,26 @@ const fs      = require("fs");
 const path    = require("path");
 
 // ── Load JSON ────────────────────────────────────────────────
-const raw  = fs.readFileSync(path.join(__dirname, "lecture8_slides.json"), "utf8");
+const ROOT = path.join(__dirname, "..");
+const raw  = fs.readFileSync(path.join(ROOT, "data", "lecture9_slides.json"), "utf8");
 const data = JSON.parse(raw);
 const { presentation, slides } = data;
+
+function resolveOutputPath(rawPath) {
+  const fallback = path.join(ROOT, "slides", "Lecture9_ERC20_Token_Standard.pptx");
+  if (!rawPath || typeof rawPath !== "string") return fallback;
+  let out = rawPath.trim();
+  if (!out.toLowerCase().endsWith(".pptx")) {
+    out = out.replace(/\.(ppt|json)$/i, "") + ".pptx";
+  }
+  if (process.platform !== "win32" && /^[a-zA-Z]:[\\/]/.test(out)) {
+    out = path.join(ROOT, "slides", path.basename(out));
+  } else if (!path.isAbsolute(out)) {
+    out = path.join(ROOT, out);
+  }
+  return out;
+}
+presentation.outputPath = resolveOutputPath(presentation.outputPath);
 
 // ── Colour Palette ───────────────────────────────────────────
 const C = {

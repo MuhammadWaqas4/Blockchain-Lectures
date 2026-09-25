@@ -80,7 +80,6 @@ Thumbs.db
 !.vscode/tasks.json
 !.vscode/launch.json
 
-generate_presentation.js
-blockchain_lecture1.json
-misc.txt
-out/
+# accidental Windows path folders on macOS
+D:/
+D:\

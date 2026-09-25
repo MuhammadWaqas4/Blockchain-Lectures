@@ -1,10 +1,10 @@
 /**
  * Blockchain Basic Concepts — Presentation Generator
- * Reads: blockchain_slides.json
+ * Reads: lecture1_slides.json
  * Output: saves .pptx to OUTPUT_PATH
  *
  * Install:  npm install pptxgenjs
- * Run:      node generate_presentation.js
+ * Run:      node generate_lecture1.js
  */
 
 const pptxgen = require("pptxgenjs");
@@ -13,13 +13,10 @@ const fs      = require("fs");
 const os      = require("os");
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-const JSON_FILE   = path.join(__dirname, "blockchain_slides.json");
-const OUTPUT_PATH = path.join(
-  os.homedir(),
-  "Desktop", "Drive (D) work", "Drive (Extra)",
-  "work", "Blockchain-Lectures", "slides"
-);
-const OUTPUT_FILE = "Blockchain_Basic_Concepts.pptx";
+const ROOT = path.join(__dirname, "..");
+const JSON_FILE = path.join(ROOT, "data", "lecture1_slides.json");
+const OUTPUT_PATH = path.join(ROOT, "slides");
+const OUTPUT_FILE = "Lecture1_Introduction.pptx";
 // ──────────────────────────────────────────────────────────────────────────────
 
 const data = JSON.parse(fs.readFileSync(JSON_FILE, "utf8"));

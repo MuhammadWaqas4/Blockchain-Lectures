@@ -1,18 +1,19 @@
 /**
- * generate_ppt.js
- * Reads content.json and builds a styled .pptx deck for the
+ * generate_lecture6.js
+ * Reads lecture6_slides.json and builds a styled .pptx deck for the
  * Solidity "Lecture 6" session (Inheritance, Enums, Abstract
  * Contracts, Interfaces).
  *
- * Usage: node generate_ppt.js [content.json] [output.pptx]
+ * Usage: node generate_lecture6.js [lecture6_slides.json] [output.pptx]
  */
 
 const fs = require("fs");
 const path = require("path");
 const pptxgen = require("pptxgenjs");
 
-const contentPath = process.argv[2] || path.join(__dirname, "content.json");
-const outPath = process.argv[3] || path.join(__dirname, "output.pptx");
+const ROOT = path.join(__dirname, "..");
+const contentPath = process.argv[2] || path.join(ROOT, "data", "lecture6_slides.json");
+const outPath = process.argv[3] || path.join(ROOT, "slides", "Lecture6_Inheritance_Enums_Interfaces.pptx");
 
 const DATA = JSON.parse(fs.readFileSync(contentPath, "utf8"));
 const PAL = DATA.meta.palette;

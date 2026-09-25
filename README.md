@@ -1,23 +1,37 @@
 # Blockchain Lectures
 
-University course materials for **Blockchain & Solidity**: lecture slides, Remix-ready contract examples, and short guides for Remix, Foundry, and Hardhat.
+University course materials for **Blockchain & Solidity**: lecture slide decks, Remix-ready contract examples, and short guides for Remix, Foundry, and Hardhat.
 
 Developed by Muhammad Waqas.
 
-## What is in this repo
+## Folder structure
 
-| Path | Contents |
-| --- | --- |
-| `practicals/` | Solidity files, one per lecture |
-| `guides/remix/` | How to compile and run those contracts in Remix |
-| `guides/foundry/` | How to test and deploy with Foundry |
-| `guides/hardhat/` | How to test and deploy with Hardhat |
-| `*.json` / `generate_*.js` | Slide data and PPTX generators |
-| `slides/` | Generated PowerPoint decks |
+```text
+Blockchain-Lectures/
+├── data/              # Slide JSON for lectures 1–9
+├── generators/        # PPTX generators (one per lecture)
+├── slides/            # Generated PowerPoint decks
+├── practicals/        # Remix-ready Solidity examples
+├── guides/            # Remix, Foundry, Hardhat how-tos
+├── package.json
+├── .env.example
+└── README.md
+```
+
+## Generate slides
+
+```bash
+npm install
+
+npm run slides:1        # one lecture
+npm run slides:all      # lectures 1–9
+```
+
+Output goes to `slides/`.
 
 ## Practicals
 
-Each file has several small contracts. Open the file in Remix and pick one contract from the Deploy dropdown.
+Each file has several small contracts. Open it in Remix and pick one contract from the Deploy dropdown.
 
 | File | Topics |
 | --- | --- |
@@ -34,21 +48,10 @@ Compiler: `pragma solidity ^0.8.20`.
 
 ## How to run the contracts
 
-1. **Remix (recommended first)** — browser only, no install.  
-   [guides/remix/README.md](guides/remix/README.md)
-
-2. **Foundry** — compile, `forge test`, deploy with Anvil or a testnet.  
-   [guides/foundry/README.md](guides/foundry/README.md)
-
-3. **Hardhat** — compile, `npx hardhat test`, deploy locally or to Sepolia.  
-   [guides/hardhat/README.md](guides/hardhat/README.md)
-
-## Prerequisites
-
-- Remix: a browser
-- Foundry: `foundryup` ([install guide](guides/foundry/README.md))
-- Hardhat: Node.js LTS ([install guide](guides/hardhat/README.md))
+1. **Remix** — [guides/remix/README.md](guides/remix/README.md)
+2. **Foundry** — [guides/foundry/README.md](guides/foundry/README.md)
+3. **Hardhat** — [guides/hardhat/README.md](guides/hardhat/README.md)
 
 ## Safety
 
-Do not commit `.env` files, private keys, or mnemonics. Use a throwaway wallet on testnets. This repo's `.gitignore` already ignores `.env`, `node_modules/`, Hardhat artifacts, and Foundry broadcast files.
+Do not commit `.env` files, private keys, or mnemonics. Use a throwaway wallet on testnets.

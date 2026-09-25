@@ -1,22 +1,20 @@
 {
   "presentation": {
-    "title": "Blockchain Technology – Lecture 8",
+    "title": "Blockchain Technology – Lecture 9",
     "author": "Muhammad Waqas | https://github.com/MuhammadWaqas4 | +92 333 5086624",
-    "subject": "ERC-20 Token Standard — Fungible Tokens in Solidity",
-    "outputPath": "D:/work/Drive (Extra)/work/Blockchain-Lectures/Blockchain_Lecture10.pptx"
+    "subject": "ERC-20 Token Standard — Deep Dive & Practice",
+    "outputPath": "slides/Lecture9_ERC20_Token_Standard.pptx"
   },
   "slides": [
-
     {
       "id": 1,
       "type": "title",
-      "tag": "LECTURE 8",
-      "title": "ERC-20 Token Standard",
-      "subtitle": "Fungible Tokens  •  Balances  •  Transfers  •  Approvals  •  OpenZeppelin",
+      "tag": "LECTURE 9",
+      "title": "ERC-20 Token Standard — Deep Dive",
+      "subtitle": "Practice  •  Approvals  •  transferFrom  •  OpenZeppelin",
       "duration": "Duration: 1.5 Hours",
       "footer": "Muhammad Waqas  | https://github.com/MuhammadWaqas4 | +92 333 5086624"
     },
-
     {
       "id": 2,
       "type": "agenda",
@@ -36,7 +34,6 @@
         "Final Summary & Diagram"
       ]
     },
-
     {
       "id": 3,
       "type": "opening",
@@ -52,7 +49,6 @@
       ],
       "transition": "Now we use all those concepts together to understand something that almost every blockchain developer works with: ERC-20 tokens."
     },
-
     {
       "id": 4,
       "type": "standard_intro",
@@ -62,11 +58,16 @@
       "diagram": {
         "top": "Wallet (MetaMask)",
         "label": "understands ERC-20",
-        "tokens": ["USDT", "USDC", "UNI", "LINK", "Any ERC-20"]
+        "tokens": [
+          "USDT",
+          "USDC",
+          "UNI",
+          "LINK",
+          "Any ERC-20"
+        ]
       },
       "key_insight": "MetaMask does not need custom code for every token. A DEX does not need different logic for every token. The standard handles it."
     },
-
     {
       "id": 5,
       "type": "concept",
@@ -74,16 +75,37 @@
       "definition": "ERC-20 (Ethereum Request for Comments #20) is a standard that defines how fungible tokens should behave on the Ethereum blockchain.",
       "fungible_explanation": "Fungible means every unit is interchangeable — identical in value and properties.",
       "examples": [
-        { "label": "1 USDT", "equals": "any other 1 USDT", "fungible": true },
-        { "label": "1 USD bill", "equals": "any other 1 USD bill", "fungible": true },
-        { "label": "NFT #100", "equals": "NOT equal to NFT #101", "fungible": false }
+        {
+          "label": "1 USDT",
+          "equals": "any other 1 USDT",
+          "fungible": true
+        },
+        {
+          "label": "1 USD bill",
+          "equals": "any other 1 USD bill",
+          "fungible": true
+        },
+        {
+          "label": "NFT #100",
+          "equals": "NOT equal to NFT #101",
+          "fungible": false
+        }
       ],
       "comparison": {
-        "erc20": { "label": "ERC-20", "type": "Fungible", "example": "USDT, USDC, UNI, LINK", "color": "1A6FBF" },
-        "erc721": { "label": "ERC-721", "type": "Non-Fungible (NFT)", "example": "CryptoPunks, BAYC", "color": "9B59B6" }
+        "erc20": {
+          "label": "ERC-20",
+          "type": "Fungible",
+          "example": "USDT, USDC, UNI, LINK",
+          "color": "1A6FBF"
+        },
+        "erc721": {
+          "label": "ERC-721",
+          "type": "Non-Fungible (NFT)",
+          "example": "CryptoPunks, BAYC",
+          "color": "9B59B6"
+        }
       }
     },
-
     {
       "id": 6,
       "type": "functions_overview",
@@ -129,7 +151,6 @@
       ],
       "note": "approve, allowance, and transferFrom are extremely important in DeFi protocols."
     },
-
     {
       "id": 7,
       "type": "concept",
@@ -145,15 +166,23 @@
       "diagram": {
         "title": "balanceOf mapping",
         "entries": [
-          { "address": "0xAAA...", "balance": "500 MTK" },
-          { "address": "0xBBB...", "balance": "300 MTK" },
-          { "address": "0xCCC...", "balance": "200 MTK" }
+          {
+            "address": "0xAAA...",
+            "balance": "500 MTK"
+          },
+          {
+            "address": "0xBBB...",
+            "balance": "300 MTK"
+          },
+          {
+            "address": "0xCCC...",
+            "balance": "200 MTK"
+          }
         ]
       },
       "insight": "This is exactly why we learned mappings in earlier lectures. They are the perfect data structure for token balances.",
       "supply_var": "uint256 public totalSupply;   // total tokens that exist"
     },
-
     {
       "id": 8,
       "type": "code_slide",
@@ -178,7 +207,6 @@
         "Call balanceOf(your address) → 1000"
       ]
     },
-
     {
       "id": 9,
       "type": "code_slide",
@@ -192,9 +220,15 @@
         "Return true on success"
       ],
       "before_after": {
-        "before": { "alice": 1000, "bob": 0 },
+        "before": {
+          "alice": 1000,
+          "bob": 0
+        },
         "call": "transfer(Bob, 200)",
-        "after": { "alice": 800, "bob": 200 }
+        "after": {
+          "alice": 800,
+          "bob": 200
+        }
       },
       "steps": [
         "Copy a second account address from Remix",
@@ -203,7 +237,6 @@
         "Check balanceOf(secondAccount) → 200"
       ]
     },
-
     {
       "id": 10,
       "type": "code_slide",
@@ -224,7 +257,6 @@
         "Indexers (TheGraph) build databases from events"
       ]
     },
-
     {
       "id": 11,
       "type": "concept",
@@ -248,7 +280,6 @@
         "amount": "100 MTK"
       }
     },
-
     {
       "id": 12,
       "type": "code_slide",
@@ -269,7 +300,6 @@
         "Notice: balanceOf(deployer) is still unchanged"
       ]
     },
-
     {
       "id": 13,
       "type": "code_slide",
@@ -291,7 +321,6 @@
         "remaining_allowance": "100"
       }
     },
-
     {
       "id": 14,
       "type": "code_slide",
@@ -308,7 +337,6 @@
         "transferFrom() — delegated spend"
       ]
     },
-
     {
       "id": 15,
       "type": "concept",
@@ -324,10 +352,16 @@
       ],
       "concepts_connection": {
         "title": "Everything from previous lectures is here:",
-        "items": ["Inheritance (is ERC20)", "Events (Transfer, Approval)", "Mappings (balanceOf, allowance)", "Functions (transfer, approve, transferFrom)", "Interfaces (IERC20 underneath)", "Internal logic (_mint, _burn, _transfer)"]
+        "items": [
+          "Inheritance (is ERC20)",
+          "Events (Transfer, Approval)",
+          "Mappings (balanceOf, allowance)",
+          "Functions (transfer, approve, transferFrom)",
+          "Interfaces (IERC20 underneath)",
+          "Internal logic (_mint, _burn, _transfer)"
+        ]
       }
     },
-
     {
       "id": 16,
       "type": "concept",
@@ -342,12 +376,20 @@
       "analogy": "Just like 1 ETH = 1,000,000,000,000,000,000 wei — the display shows 1 ETH but internally it is always an integer.",
       "note": "Token decimals are only a display convention. All Solidity arithmetic operates on raw integers.",
       "common_decimals": [
-        { "token": "Most ERC-20 (ETH, UNI, LINK)", "decimals": "18" },
-        { "token": "USDT / USDC", "decimals": "6" },
-        { "token": "WBTC", "decimals": "8" }
+        {
+          "token": "Most ERC-20 (ETH, UNI, LINK)",
+          "decimals": "18"
+        },
+        {
+          "token": "USDT / USDC",
+          "decimals": "6"
+        },
+        {
+          "token": "WBTC",
+          "decimals": "8"
+        }
       ]
     },
-
     {
       "id": 17,
       "type": "summary_diagram",
@@ -355,57 +397,110 @@
       "layers": [
         {
           "label": "Token Identity",
-          "items": ["name", "symbol", "decimals()"],
+          "items": [
+            "name",
+            "symbol",
+            "decimals()"
+          ],
           "color": "1A6FBF"
         },
         {
           "label": "Supply & Balances",
-          "items": ["totalSupply", "balanceOf(address)"],
+          "items": [
+            "totalSupply",
+            "balanceOf(address)"
+          ],
           "color": "00C6AE"
         },
         {
           "label": "Direct Transfer",
-          "items": ["transfer(to, amount)"],
+          "items": [
+            "transfer(to, amount)"
+          ],
           "color": "F59E0B"
         },
         {
           "label": "Delegated Spend",
-          "items": ["approve(spender, amount)", "allowance(owner, spender)", "transferFrom(from, to, amount)"],
+          "items": [
+            "approve(spender, amount)",
+            "allowance(owner, spender)",
+            "transferFrom(from, to, amount)"
+          ],
           "color": "E74C3C"
         },
         {
           "label": "Events",
-          "items": ["Transfer(from, to, value)", "Approval(owner, spender, value)"],
+          "items": [
+            "Transfer(from, to, value)",
+            "Approval(owner, spender, value)"
+          ],
           "color": "9B59B6"
         },
         {
           "label": "Production",
-          "items": ["OpenZeppelin ERC20.sol", "_mint() / _burn()"],
+          "items": [
+            "OpenZeppelin ERC20.sol",
+            "_mint() / _burn()"
+          ],
           "color": "27AE60"
         }
       ]
     },
-
     {
       "id": 18,
       "type": "summary_table",
       "title": "Lecture 8 — Complete Summary",
       "items": [
-        { "concept": "ERC-20",           "detail": "Standard interface for fungible tokens on Ethereum" },
-        { "concept": "Fungible",         "detail": "Every unit is identical and interchangeable in value" },
-        { "concept": "totalSupply",      "detail": "Total number of tokens that exist in the contract" },
-        { "concept": "balanceOf",        "detail": "Mapping — wallet address → token balance" },
-        { "concept": "transfer()",       "detail": "Owner sends tokens directly to another address" },
-        { "concept": "approve()",        "detail": "Owner grants a spender permission to spend tokens" },
-        { "concept": "allowance()",      "detail": "Query how many tokens a spender is permitted to use" },
-        { "concept": "transferFrom()",   "detail": "Approved spender moves tokens on behalf of the owner" },
-        { "concept": "Transfer event",   "detail": "Emitted on every token movement — wallets track this" },
-        { "concept": "Approval event",   "detail": "Emitted when approve() is called" },
-        { "concept": "decimals()",       "detail": "Display precision — 18 decimals by default" },
-        { "concept": "OpenZeppelin",     "detail": "Production-grade audited ERC-20 implementation" }
+        {
+          "concept": "ERC-20",
+          "detail": "Standard interface for fungible tokens on Ethereum"
+        },
+        {
+          "concept": "Fungible",
+          "detail": "Every unit is identical and interchangeable in value"
+        },
+        {
+          "concept": "totalSupply",
+          "detail": "Total number of tokens that exist in the contract"
+        },
+        {
+          "concept": "balanceOf",
+          "detail": "Mapping — wallet address → token balance"
+        },
+        {
+          "concept": "transfer()",
+          "detail": "Owner sends tokens directly to another address"
+        },
+        {
+          "concept": "approve()",
+          "detail": "Owner grants a spender permission to spend tokens"
+        },
+        {
+          "concept": "allowance()",
+          "detail": "Query how many tokens a spender is permitted to use"
+        },
+        {
+          "concept": "transferFrom()",
+          "detail": "Approved spender moves tokens on behalf of the owner"
+        },
+        {
+          "concept": "Transfer event",
+          "detail": "Emitted on every token movement — wallets track this"
+        },
+        {
+          "concept": "Approval event",
+          "detail": "Emitted when approve() is called"
+        },
+        {
+          "concept": "decimals()",
+          "detail": "Display precision — 18 decimals by default"
+        },
+        {
+          "concept": "OpenZeppelin",
+          "detail": "Production-grade audited ERC-20 implementation"
+        }
       ]
     },
-
     {
       "id": 19,
       "type": "closing",
@@ -425,6 +520,5 @@
       "next": "Next Lecture: ERC-721 NFT Standard — Non-Fungible Tokens",
       "footer": "Blockchain Course  |  Lecture 8  |  Questions & Discussion"
     }
-
   ]
 }

@@ -11,8 +11,9 @@ const pptxgen = require("pptxgenjs");
 const path    = require("path");
 const fs      = require("fs");
 
-const JSON_FILE   = path.join(__dirname, "lecture7_slides.json");
-const OUTPUT_PATH = path.join(__dirname, "slides");
+const ROOT = path.join(__dirname, "..");
+const JSON_FILE = path.join(ROOT, "data", "lecture7_slides.json");
+const OUTPUT_PATH = path.join(ROOT, "slides");
 const OUTPUT_FILE = "Lecture7_Contract_Architecture.pptx";
 
 const data = JSON.parse(fs.readFileSync(JSON_FILE, "utf8"));

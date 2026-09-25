@@ -38,16 +38,16 @@
     "lecture-slides"
   ],
   "scripts": {
-    "slides:2": "node generate_lecture2.js",
-    "slides:3": "node generate_lecture3.js",
-    "slides:4": "node generate_lecture4.js",
-    "slides:5": "node generate_lecture5.js",
-    "slides:6": "node generate_lecture6.js",
-    "slides:7": "node generate_lecture7.js",
-    "slides:8": "node generate_lecture8.js",
-    "slides:9": "node generate_lecture9.js",
-    "slides:all": "npm run slides:2 && npm run slides:3 && npm run slides:4 && npm run slides:5 && npm run slides:6 && npm run slides:7 && npm run slides:8 && npm run slides:9",
-    "slides:course": "node generate_ppt.js"
+    "slides:1": "node generators/generate_lecture1.js",
+    "slides:2": "node generators/generate_lecture2.js",
+    "slides:3": "node generators/generate_lecture3.js",
+    "slides:4": "node generators/generate_lecture4.js",
+    "slides:5": "node generators/generate_lecture5.js",
+    "slides:6": "node generators/generate_lecture6.js",
+    "slides:7": "node generators/generate_lecture7.js",
+    "slides:8": "node generators/generate_lecture8.js",
+    "slides:9": "node generators/generate_lecture9.js",
+    "slides:all": "npm run slides:1 && npm run slides:2 && npm run slides:3 && npm run slides:4 && npm run slides:5 && npm run slides:6 && npm run slides:7 && npm run slides:8 && npm run slides:9"
   },
   "dependencies": {
     "fs-extra": "^11.3.5",
