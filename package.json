@@ -1,23 +1,54 @@
 {
   "name": "blockchain-lectures",
   "version": "1.0.0",
-  "description": "Solidity smart contracts + a Node.js backend workspace.",
-  "main": "generate_presentation.js",
-  "author": "Muhammad Waqas",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "private": true,
+  "description": "University Blockchain & Solidity course — lecture slide decks, Remix-ready practicals, and tooling guides for Remix, Foundry, and Hardhat.",
+  "author": {
+    "name": "Muhammad Waqas",
+    "url": "https://github.com/MuhammadWaqas4",
+    "email": "mwaqasbashir4@gmail.com"
+  },
+  "license": "MIT",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MuhammadWaqas4/Blockchain-Lectures.git"
   },
-  "keywords": [],
-  "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/MuhammadWaqas4/Blockchain-Lectures/issues"
   },
   "homepage": "https://github.com/MuhammadWaqas4/Blockchain-Lectures#readme",
+  "keywords": [
+    "blockchain",
+    "solidity",
+    "ethereum",
+    "smart-contracts",
+    "erc-20",
+    "remix",
+    "foundry",
+    "hardhat",
+    "web3",
+    "evm",
+    "education",
+    "university-course",
+    "pptx",
+    "lecture-slides"
+  ],
+  "scripts": {
+    "slides:2": "node generate_lecture2.js",
+    "slides:3": "node generate_lecture3.js",
+    "slides:4": "node generate_lecture4.js",
+    "slides:5": "node generate_lecture5.js",
+    "slides:6": "node generate_lecture6.js",
+    "slides:7": "node generate_lecture7.js",
+    "slides:8": "node generate_lecture8.js",
+    "slides:9": "node generate_lecture9.js",
+    "slides:all": "npm run slides:2 && npm run slides:3 && npm run slides:4 && npm run slides:5 && npm run slides:6 && npm run slides:7 && npm run slides:8 && npm run slides:9",
+    "slides:course": "node generate_ppt.js"
+  },
   "dependencies": {
     "fs-extra": "^11.3.5",
     "pptxgenjs": "^4.0.1"
