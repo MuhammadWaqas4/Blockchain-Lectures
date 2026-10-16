@@ -1,0 +1,571 @@
+{
+  "presentation": {
+    "title": "Blockchain Technology – Lecture 9",
+    "author": "Muhammad Waqas | https://github.com/MuhammadWaqas4 | +92 333 5086624",
+    "subject": "ERC-721 — Non-Fungible Tokens (NFTs)"
+  },
+  "slides": [
+    {
+      "id": 1,
+      "type": "title",
+      "tag": "LECTURE 9",
+      "title": "ERC-721\nNon-Fungible Tokens",
+      "subtitle": "Token IDs  •  Ownership  •  Minting  •  Transfers  •  Approvals  •  Metadata",
+      "duration": "Combined session with Lecture 10 (ERC-1155)  •  about 3 hours",
+      "footer": "Muhammad Waqas  | https://github.com/MuhammadWaqas4 | +92 333 5086624"
+    },
+    {
+      "id": 2,
+      "type": "agenda",
+      "title": "Lecture 9 — Agenda",
+      "items": [
+        { "label": "Introduction & bridge from ERC-20" },
+        { "label": "Fungible vs non-fungible" },
+        { "label": "Token IDs & NFT ownership" },
+        { "label": "Core ERC-721 functions" },
+        { "label": "Build your first OpenZeppelin ERC-721" },
+        { "label": "Minting & `_safeMint`" },
+        { "label": "Transfers & approvals" },
+        { "label": "Metadata, `tokenURI` & IPFS" },
+        { "label": "Build CourseNFT" }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "bullets",
+      "title": "From ERC-20 to ERC-721",
+      "intro": "ERC-20 introduced token standards: if everyone follows the same standard, wallets, exchanges, smart contracts and applications already know how to interact with the token.",
+      "points": [
+        "Today: another extremely important Ethereum token standard — ERC-721",
+        "ERC-721 is commonly known as the NFT standard",
+        "NFT stands for Non-Fungible Token",
+        "Before we write any code, we need to understand what non-fungible actually means"
+      ],
+      "callout": { "kind": "tip", "text": "ERC-20 → every token is equivalent.   ERC-721 → every token is unique." }
+    },
+    {
+      "id": 4,
+      "type": "section",
+      "section": "PART 1",
+      "title": "Fungible vs Non-Fungible",
+      "subtitle": "What makes one token different from another?"
+    },
+    {
+      "id": 5,
+      "type": "two_column",
+      "title": "Fungible vs Non-Fungible",
+      "left": {
+        "heading": "ERC-20 — Fungible",
+        "big": "1 USDC = 1 USDC",
+        "items": [
+          "Alice's 1 token = Bob's 1 token = John's 1 token",
+          "One token is equivalent to another token of the same type",
+          "We only count how many units each address holds"
+        ]
+      },
+      "right": {
+        "heading": "ERC-721 — Non-Fungible",
+        "big": "NFT #1 ≠ NFT #2 ≠ NFT #3",
+        "items": [
+          "Every token can represent something unique",
+          "Each token has its own token ID",
+          "We track who owns each individual token"
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "type": "cards",
+      "title": "Unique Things in the Real World",
+      "columns": 4,
+      "cards": [
+        { "title": "Houses", "code": "House #100 ≠ House #101", "text": "Same price — still two different houses" },
+        { "title": "Cars", "code": "VIN #001 ≠ VIN #002", "text": "Same model — different VIN numbers" },
+        { "title": "Concert Tickets", "code": "Ticket #500 ≠ Ticket #501", "text": "Each ticket is for a different seat" },
+        { "title": "Game Items", "code": "Sword #10 ≠ Sword #11", "text": "Each sword is its own item" }
+      ],
+      "callout": { "kind": "tip", "text": "That's the basic idea of an NFT: one token represents one specific, unique item." }
+    },
+    {
+      "id": 7,
+      "type": "tree",
+      "title": "What Actually Makes an NFT Unique?",
+      "intro": "A common beginner misunderstanding: an NFT is simply an image. That's not correct — the token identifies ownership, and the image and other information usually live in metadata referenced by the token.",
+      "levels": [
+        [{ "label": "NFT Contract" }],
+        [
+          { "label": "Token ID = 1", "parent": 0 },
+          { "label": "Token ID = 2", "parent": 0 }
+        ],
+        [
+          { "label": "Owner = Alice", "parent": 0, "color": "accent" },
+          { "label": "Metadata URI", "parent": 0, "color": "purple" },
+          { "label": "Owner = Bob", "parent": 1, "color": "accent" },
+          { "label": "Metadata URI", "parent": 1, "color": "purple" }
+        ]
+      ],
+      "callout": { "kind": "tip", "text": "The important concepts are token ID, ownership and metadata." }
+    },
+    {
+      "id": 8,
+      "type": "section",
+      "section": "PART 2",
+      "title": "Token IDs & Ownership",
+      "subtitle": "balanceOf  •  ownerOf  •  the core ERC-721 functions"
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Token IDs — Every NFT Has Its Own Number",
+      "headers": ["Token ID", "Owner"],
+      "rows": [
+        ["1", "Alice"],
+        ["2", "Bob"],
+        ["3", "Alice"],
+        ["4", "John"]
+      ],
+      "points": [
+        "`uint256 tokenId;` identifies each individual NFT",
+        "Token #1, #2, #3, #4 — each one is a separate asset",
+        "Alice can own multiple NFTs (#1 and #3)",
+        "But token #1 itself has one owner at a time"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "two_column",
+      "title": "balanceOf — ERC-20 vs ERC-721",
+      "left": {
+        "heading": "ERC-20",
+        "code": ["balanceOf(Alice) = 500   // tokens"],
+        "items": ["Tells us how many fungible units Alice owns"]
+      },
+      "right": {
+        "heading": "ERC-721",
+        "code": [
+          "balanceOf(Alice) = 2   // NFTs",
+          "",
+          "ownerOf(1) = Alice",
+          "ownerOf(3) = Alice"
+        ],
+        "items": [
+          "Tells us how many different NFTs Alice owns",
+          "`ownerOf` tells us which specific NFTs are hers"
+        ]
+      },
+      "source": "OpenZeppelin Docs — the ERC-721 implementation exposes ownership, balances, approvals and safe transfers."
+    },
+    {
+      "id": 11,
+      "type": "cards",
+      "title": "Core ERC-721 Functions",
+      "columns": 4,
+      "monoTitles": true,
+      "cards": [
+        { "title": "balanceOf(owner)", "text": "How many NFTs an address owns" },
+        { "title": "ownerOf(tokenId)", "text": "Who owns one specific NFT" },
+        { "title": "transferFrom(...)", "text": "Moves an NFT: `(from, to, tokenId)`" },
+        { "title": "safeTransferFrom(...)", "text": "Moves an NFT and checks the receiver can accept it" },
+        { "title": "approve(...)", "text": "Lets one address transfer one NFT: `(to, tokenId)`" },
+        { "title": "getApproved(...)", "text": "Which address is approved for a token: `(tokenId)`" },
+        { "title": "setApprovalForAll(...)", "text": "Lets an operator manage all your NFTs: `(operator, true)`" },
+        { "title": "isApprovedForAll(...)", "text": "Is this operator approved? `(owner, operator)`" }
+      ],
+      "source": "OpenZeppelin Docs — ERC-721 core functionality: ownership, balances, approvals and safe transfers."
+    },
+    {
+      "id": 12,
+      "type": "two_column",
+      "title": "balanceOf vs ownerOf",
+      "left": {
+        "heading": "balanceOf(address)",
+        "big": "Address → Number of NFTs",
+        "items": [
+          "Alice owns NFT #1, #4 and #8",
+          "`balanceOf(Alice) = 3`"
+        ]
+      },
+      "right": {
+        "heading": "ownerOf(tokenId)",
+        "big": "NFT → Owner address",
+        "items": [
+          "Asks about one specific NFT",
+          "`ownerOf(8) → Alice`"
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "type": "code",
+      "title": "NFT Ownership Internally — the Concept",
+      "blocks": [
+        {
+          "label": "Learning model only — not production code",
+          "code": [
+            "mapping(uint256 => address) public owners;",
+            "",
+            "// owners[1] = Alice",
+            "// owners[2] = Bob",
+            "// owners[3] = John",
+            "",
+            "mapping(address => uint256) public balances;",
+            "",
+            "// balances[Alice] = 1"
+          ]
+        }
+      ],
+      "points": [
+        "Conceptually, NFT ownership is a mapping: token ID → owner",
+        "A second mapping can track how many NFTs each address holds",
+        "You already know mappings, so you can understand what an NFT ownership system is trying to achieve"
+      ],
+      "callout": { "kind": "warn", "text": "In production we do not implement ERC-721 ourselves like this. We look at the concept so we understand what OpenZeppelin does for us." }
+    },
+    {
+      "id": 14,
+      "type": "section",
+      "section": "PART 3",
+      "title": "Your First ERC-721 Contract",
+      "subtitle": "OpenZeppelin  •  Inheritance  •  Constructor  •  Minting"
+    },
+    {
+      "id": 15,
+      "type": "code",
+      "title": "MyNFT — Your First ERC-721 Contract",
+      "blocks": [
+        {
+          "label": "MyNFT.sol",
+          "code": [
+            "// SPDX-License-Identifier: MIT",
+            "pragma solidity ^0.8.24;",
+            "",
+            "import \"@openzeppelin/contracts/token/ERC721/ERC721.sol\";",
+            "",
+            "contract MyNFT is ERC721 {",
+            "    uint256 public nextTokenId;",
+            "",
+            "    constructor() ERC721(\"My NFT Collection\", \"MNFT\") {}",
+            "",
+            "    function mint(address to) public {",
+            "        uint256 tokenId = nextTokenId;",
+            "        nextTokenId++;",
+            "        _safeMint(to, tokenId);",
+            "    }",
+            "}"
+          ]
+        }
+      ],
+      "points": [
+        "`import` — reuse OpenZeppelin's ERC-721 instead of writing the standard ourselves",
+        "`is ERC721` — MyNFT inherits the whole standard",
+        "`constructor` — passes the collection name and symbol to the parent",
+        "`nextTokenId` — a counter that gives every NFT a new ID",
+        "`_safeMint(to, tokenId)` — creates the NFT and assigns its owner"
+      ],
+      "callout": { "kind": "warn", "label": "REMIX", "text": "OpenZeppelin 5.x needs compiler 0.8.24 or newer — select it in the Solidity Compiler tab." },
+      "source": "OpenZeppelin Docs — widely used implementations of standards such as ERC-20 and ERC-721."
+    },
+    {
+      "id": 16,
+      "type": "flow",
+      "title": "Inheritance & Constructor",
+      "steps": [
+        { "label": "OpenZeppelin ERC721", "sub": "complete ERC-721 standard", "color": "primary", "arrow": "inheritance" },
+        { "label": "MyNFT", "sub": "contract MyNFT is ERC721", "color": "accent" }
+      ],
+      "codeLabel": "Constructor",
+      "code": [
+        "constructor()",
+        "    ERC721(\"My NFT Collection\", \"MNFT\")",
+        "{}",
+        "",
+        "// Name   = My NFT Collection",
+        "// Symbol = MNFT"
+      ],
+      "points": [
+        "You now see why we learned inheritance before token standards",
+        "MyNFT inherits the `ERC721` contract",
+        "The parent `ERC721` constructor needs the collection name and symbol"
+      ]
+    },
+    {
+      "id": 17,
+      "type": "flow",
+      "title": "Minting — Creating a New NFT",
+      "steps": [
+        { "label": "Before mint", "sub": "NFT #5 does not exist", "color": "primary" },
+        { "label": "_safeMint(Alice, 5)", "mono": true, "sub": "mint = create a new token", "color": "amber" },
+        { "label": "After mint", "sub": "NFT #5 exists • owner = Alice", "color": "green" }
+      ],
+      "codeLabel": "The counter",
+      "code": [
+        "uint256 public nextTokenId;   // starts at 0",
+        "",
+        "// 1st mint → token 0",
+        "// 2nd mint → token 1",
+        "// 3rd mint → token 2"
+      ],
+      "points": [
+        "Minting creates the NFT and assigns ownership",
+        "`nextTokenId++` makes sure every new NFT gets a fresh ID"
+      ]
+    },
+    {
+      "id": 18,
+      "type": "bullets",
+      "title": "Live Demo in Remix — MyNFT",
+      "numbered": true,
+      "points": [
+        "Compile with 0.8.24 or newer, then deploy `MyNFT` using Account 1",
+        "Call `mint(Account1)` — paste Account 1's address",
+        "Call `ownerOf(0)` → returns Account 1",
+        "Call `balanceOf(Account1)` → returns 1",
+        "Mint another NFT, then call `balanceOf(Account1)` → returns 2"
+      ],
+      "callout": { "kind": "tip", "text": "The address owns two NFTs, while each NFT has its own token ID (0 and 1)." }
+    },
+    {
+      "id": 19,
+      "type": "bullets",
+      "title": "Why _safeMint and Not Just mint?",
+      "intro": "The safe version provides additional protection when an NFT is minted to another smart contract.",
+      "points": [
+        "If the receiver is a smart contract, ERC-721 verifies that it knows how to accept ERC-721 tokens",
+        "Contracts that accept NFTs implement `IERC721Receiver`",
+        "This protects against sending NFTs to contracts that are unable to handle them",
+        "The same idea applies to transfers: `safeTransferFrom`"
+      ],
+      "callout": { "kind": "tip", "text": "For now remember: in normal NFT applications, `_safeMint` is generally the appropriate minting primitive." },
+      "source": "OpenZeppelin Docs — IERC721Receiver lets contracts accept NFTs safely via safeTransferFrom."
+    },
+    {
+      "id": 20,
+      "type": "section",
+      "section": "PART 4",
+      "title": "Transfers & Approvals",
+      "subtitle": "Moving NFTs between owners  •  approve  •  setApprovalForAll"
+    },
+    {
+      "id": 21,
+      "type": "flow",
+      "title": "Transferring an NFT",
+      "intro": "Creating an NFT is only one part — NFTs also need to move between owners.",
+      "steps": [
+        { "label": "NFT #0", "sub": "owner = Alice", "color": "primary" },
+        { "label": "safeTransferFrom", "mono": true, "sub": "(Alice, Bob, 0)", "color": "amber" },
+        { "label": "NFT #0", "sub": "owner = Bob", "color": "green" }
+      ],
+      "codeLabel": "ERC-721 gives two transfer functions",
+      "code": [
+        "transferFrom(from, to, tokenId);",
+        "safeTransferFrom(from, to, tokenId);"
+      ],
+      "points": [
+        "Notice that ERC-721 transfers use a token ID",
+        "`safeTransferFrom` checks that a receiving contract can accept the NFT"
+      ]
+    },
+    {
+      "id": 22,
+      "type": "two_column",
+      "title": "Transfers — ERC-20 vs ERC-721",
+      "left": {
+        "heading": "ERC-20",
+        "code": ["transfer(Bob, 100);"],
+        "big": "100 units",
+        "items": ["Moves an amount of fungible units"]
+      },
+      "right": {
+        "heading": "ERC-721",
+        "code": ["safeTransferFrom(Alice, Bob, 7);"],
+        "big": "Specific NFT #7",
+        "items": ["Moves one specific token, identified by its token ID"]
+      },
+      "callout": { "kind": "tip", "text": "A very important comparison: ERC-20 moves amounts, ERC-721 moves specific token IDs." }
+    },
+    {
+      "id": 23,
+      "type": "tree",
+      "title": "approve() — Permission for One NFT",
+      "intro": "In ERC-20, Alice could approve a spender for an amount. Because NFTs are unique, ERC-721 has two types of approval.",
+      "levels": [
+        [{ "label": "Alice" }],
+        [{ "label": "NFT #10", "parent": 0, "edge": "owns", "color": "accent" }],
+        [{ "label": "Marketplace", "parent": 0, "edge": "approve(Marketplace, 10)", "color": "amber" }]
+      ],
+      "side": {
+        "heading": "approve(to, tokenId)",
+        "items": [
+          "Grants permission for one specific NFT",
+          "The marketplace can now transfer NFT #10",
+          "Check it with `getApproved(10)`"
+        ]
+      }
+    },
+    {
+      "id": 24,
+      "type": "tree",
+      "title": "setApprovalForAll() — Permission for All NFTs",
+      "levels": [
+        [{ "label": "Alice" }],
+        [
+          { "label": "NFT #1", "parent": 0, "color": "accent" },
+          { "label": "NFT #2", "parent": 0, "edge": "owns", "color": "accent" },
+          { "label": "NFT #7", "parent": 0, "color": "accent" }
+        ],
+        [{ "label": "Marketplace", "parent": [0, 1, 2], "edge": "setApprovalForAll(Marketplace, true)", "color": "amber" }]
+      ],
+      "side": {
+        "heading": "setApprovalForAll(op, true)",
+        "items": [
+          "The operator can manage all of the owner's NFTs in this collection",
+          "Marketplaces use it to transfer an NFT when a sale occurs",
+          "Check it with `isApprovedForAll(Alice, Marketplace)`"
+        ]
+      },
+      "callout": { "kind": "info", "text": "`approve(spender, tokenId)` → one NFT.   `setApprovalForAll(operator, true)` → all NFTs owned by the user for that ERC-721 contract." }
+    },
+    {
+      "id": 25,
+      "type": "section",
+      "section": "PART 5",
+      "title": "Metadata, tokenURI & IPFS",
+      "subtitle": "Where do the image, the name and the attributes come from?"
+    },
+    {
+      "id": 26,
+      "type": "flow",
+      "title": "Where Does the Image Come From?",
+      "intro": "Now we understand ownership. But where do the image, the name, and attributes like strength, level or rarity come from? Answer: metadata.",
+      "steps": [
+        { "label": "NFT #1", "color": "primary" },
+        { "label": "tokenURI(1)", "mono": true, "color": "amber" },
+        { "label": "Metadata JSON", "color": "purple" },
+        { "label": "NFT details", "sub": "name • description • image • attributes", "color": "green" }
+      ],
+      "points": [
+        "`tokenURI(tokenId)` returns the location of a token's metadata",
+        "Wallets and marketplaces read that JSON to display the NFT"
+      ]
+    },
+    {
+      "id": 27,
+      "type": "code",
+      "title": "Example NFT Metadata (JSON)",
+      "blocks": [
+        {
+          "label": "metadata.json  —  JSON, not Solidity",
+          "code": [
+            "{",
+            "  \"name\": \"Blockchain Warrior #1\",",
+            "  \"description\": \"A warrior from our NFT collection\",",
+            "  \"image\": \"ipfs://.../warrior1.png\",",
+            "  \"attributes\": [",
+            "    { \"trait_type\": \"Strength\", \"value\": 90 },",
+            "    { \"trait_type\": \"Level\", \"value\": 5 }",
+            "  ]",
+            "}"
+          ]
+        }
+      ],
+      "points": [
+        "This is not Solidity — this is JSON metadata",
+        "`name` and `description` describe the NFT",
+        "`image` usually points to a file, for example on IPFS",
+        "`attributes` hold traits such as strength and level",
+        "Contract → `tokenURI(1)` → metadata → `image` → the NFT image"
+      ]
+    },
+    {
+      "id": 28,
+      "type": "cards",
+      "title": "Where Does the Metadata Live?",
+      "intro": "Storing large image files directly in normal Ethereum contract storage would generally be extremely expensive — so the contract usually references metadata using a URI.",
+      "columns": 4,
+      "cards": [
+        { "title": "IPFS", "code": "ipfs://Qm…", "text": "Content-addressed, decentralized file storage — commonly used for NFTs" },
+        { "title": "Arweave", "code": "ar://…", "text": "Decentralized storage designed for permanent data" },
+        { "title": "Web Server", "code": "https://…", "text": "Simple to set up, but controlled by whoever runs the server" },
+        { "title": "On-chain", "code": "data:application/json…", "text": "Metadata generated by the contract itself" }
+      ],
+      "callout": { "kind": "tip", "text": "IPFS is commonly used because it provides content-addressed decentralized file storage." }
+    },
+    {
+      "id": 29,
+      "type": "code",
+      "title": "CourseNFT — Per-Token Metadata",
+      "blocks": [
+        {
+          "label": "CourseNFT.sol",
+          "code": [
+            "// SPDX-License-Identifier: MIT",
+            "pragma solidity ^0.8.24;",
+            "",
+            "import \"@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol\";",
+            "",
+            "contract CourseNFT is ERC721URIStorage {",
+            "    uint256 public nextTokenId;",
+            "",
+            "    constructor() ERC721(\"Course NFT\", \"CNFT\") {}",
+            "",
+            "    function mint(address to, string memory metadataURI) public {",
+            "        uint256 tokenId = nextTokenId;",
+            "        nextTokenId++;",
+            "        _safeMint(to, tokenId);",
+            "        _setTokenURI(tokenId, metadataURI);",
+            "    }",
+            "}"
+          ]
+        }
+      ],
+      "points": [
+        "`ERC721URIStorage` — an extension with per-token URI storage",
+        "`_setTokenURI` links the NFT to its metadata URI",
+        "Mint to `0xAlice…` with `ipfs://QmExample/1.json`",
+        "`tokenURI(0)` → `ipfs://QmExample/1.json`"
+      ]
+    },
+    {
+      "id": 30,
+      "type": "tree",
+      "title": "NFT Application Architecture",
+      "levels": [
+        [{ "label": "NFT DApp" }],
+        [
+          { "label": "Frontend", "parent": 0, "color": "primary" },
+          { "label": "Blockchain", "parent": 0, "color": "primary" }
+        ],
+        [{ "label": "ERC-721 Contract", "parent": 1, "color": "accent" }],
+        [
+          { "label": "Token ID", "parent": 0, "color": "amber" },
+          { "label": "Owner", "parent": 0, "color": "amber" }
+        ],
+        [{ "label": "tokenURI → Metadata JSON", "parent": 0, "color": "purple" }],
+        [
+          { "label": "Image", "parent": 0, "color": "green" },
+          { "label": "Attributes", "parent": 0, "color": "green" }
+        ]
+      ]
+    },
+    {
+      "id": 31,
+      "type": "closing",
+      "tag": "LECTURE 9 COMPLETE",
+      "title": "Thank You",
+      "subtitle": "ERC-721 — Non-Fungible Tokens",
+      "key_message": "ERC-721 gives us a standardized way to represent unique digital assets: every NFT has a token ID, an owner, and potentially metadata.",
+      "recap": [
+        "Fungible vs non-fungible tokens",
+        "Token IDs — one owner per NFT",
+        "`balanceOf` vs `ownerOf`",
+        "Minting with `_safeMint`",
+        "`transferFrom` & `safeTransferFrom`",
+        "`approve` & `setApprovalForAll`",
+        "Metadata, `tokenURI` & IPFS",
+        "CourseNFT with `ERC721URIStorage`"
+      ],
+      "next": "Next: Lecture 10 — ERC-1155 Multi-Token Standard",
+      "footer": "Blockchain Course  |  Lecture 9  |  Questions & Discussion"
+    }
+  ]
+}
