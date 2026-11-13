@@ -58,3 +58,30 @@ contract WWW is ERC721, ERC721URIStorage {
         return super.supportsInterface(interfaceId);
     }
 }
+
+/////////////////////////////////////////  practical # 3  /////////////////////////////////////////////////
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts@5.0.2/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts@5.0.2/access/Ownable.sol";
+
+contract MyNFT is ERC721, Ownable {
+    uint256 public nextTokenId;
+    string private baseURI;
+
+    constructor() ERC721("MyNFT", "MNFT") Ownable(msg.sender) {}
+
+    function setURI(string memory _uri) public onlyOwner {
+        baseURI = _uri;
+    }
+
+    function _baseURI() internal view override returns (string memory) {
+        return baseURI;
+    }
+
+    function mint(address to) public {
+        _safeMint(to, nextTokenId);
+        nextTokenId++;
+    }
+}
