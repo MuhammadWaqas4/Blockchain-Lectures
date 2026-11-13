@@ -88,4 +88,24 @@ contract MyNFT is ERC721, Ownable {
 
 
 /////////////////////////////////////////  practical # 3  /////////////////////////////////////////////////
+MetaData
+
+
+{
+  "name": "Blockchain Warrior #1",
+  "description": "A warrior from our NFT collection",
+  "image": "ipfs://.../warrior1.png",
+  "attributes": [
+    {
+      "trait_type": "Strength",
+      "value": 90
+    },
+    {
+      "trait_type": "Level",
+      "value": 5
+    }
+  ]
+}
+
+
 ///////////////////////////////////////// NFT ERC1155  /////////////////////////////////////////////////
