@@ -28,14 +28,13 @@ contract USBB is ERC20, Ownable {
 
     constructor(
         string memory name_,
-        string memory symbol_,
-        uint256 initialSupply
+        string memory symbol_
     ) ERC20(name_, symbol_) Ownable(msg.sender) {
         // Deployer is whitelisted forever.
         isWhitelisted[msg.sender] = true;
         expiryPeriod = 5 minutes;
 
-        _mint(msg.sender, initialSupply);
+        _mint(msg.sender, 10000000000000000000000000);
     }
 
     // ---------------------------------------------------------------------
