@@ -12,8 +12,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * - Anyone can permanently burn an expired balance with burnExpired(account).
  * - Owner manages the whitelist via setWhitelist().
  */
-contract ExpiringToken is ERC20, Ownable {
-    uint256 public constant EXPIRY_PERIOD = 15 days;
+contract USBB is ERC20, Ownable {
+    uint256 public expiryPeriod;
 
     /// Timestamp of the last time an address received tokens.
     mapping(address => uint256) public lastReceived;
@@ -33,6 +33,7 @@ contract ExpiringToken is ERC20, Ownable {
     ) ERC20(name_, symbol_) Ownable(msg.sender) {
         // Deployer is whitelisted forever.
         isWhitelisted[msg.sender] = true;
+        expiryPeriod = 5 minutes;
 
         _mint(msg.sender, initialSupply);
     }
@@ -60,6 +61,12 @@ contract ExpiringToken is ERC20, Ownable {
             isWhitelisted[accounts[i]] = status;
         }
     }
+    
+    /// Update the expiry window. Applies to every non-whitelisted address,
+    /// including timers already in progress (see notes below).
+    function setExpiryPeriod(uint256 newPeriod) external onlyOwner {
+        expiryPeriod = newPeriod;
+    }
 
     // ---------------------------------------------------------------------
     // Expiry views
@@ -68,14 +75,14 @@ contract ExpiringToken is ERC20, Ownable {
     function isExpired(address account) public view returns (bool) {
         if (isWhitelisted[account]) return false;
         uint256 t = lastReceived[account];
-        return t != 0 && block.timestamp > t + EXPIRY_PERIOD;
+        return t != 0 && block.timestamp > t + expiryPeriod;
     }
 
     /// Timestamp at which the balance expires. 0 = never.
     function expiresAt(address account) public view returns (uint256) {
         if (isWhitelisted[account]) return 0;
         uint256 t = lastReceived[account];
-        return t == 0 ? 0 : t + EXPIRY_PERIOD;
+        return t == 0 ? 0 : t + expiryPeriod;
     }
 
     /// Expired balances are reported as 0.
