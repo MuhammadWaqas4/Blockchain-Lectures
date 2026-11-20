@@ -28,13 +28,14 @@ contract USBB is ERC20, Ownable {
 
     constructor(
         string memory name_,
-        string memory symbol_
+        string memory symbol_,
+        uint256 initialSupply
     ) ERC20(name_, symbol_) Ownable(msg.sender) {
         // Deployer is whitelisted forever.
         isWhitelisted[msg.sender] = true;
         expiryPeriod = 5 minutes;
 
-        _mint(msg.sender, 10000000000000000000000000);
+        _mint(msg.sender, initialSupply * 10 ** decimals());
     }
 
     // ---------------------------------------------------------------------
@@ -59,6 +60,10 @@ contract USBB is ERC20, Ownable {
             require(accounts[i] != address(0), "ExpiringToken: zero address");
             isWhitelisted[accounts[i]] = status;
         }
+    }
+    
+    function mint(address to, uint256 amount) external onlyOwner {
+        _mint(to, amount);
     }
     
     /// Update the expiry window. Applies to every non-whitelisted address,
